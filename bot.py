@@ -3,7 +3,7 @@ import json
 from telegram import Update
 from telegram.ext import Application, MessageHandler, filters, ContextTypes
 
-TOKEN =os.getenv("Bot_Token")
+TOKEN = os.getenv("BOT_TOKEN")
 
 with open("database.json", "r", encoding="utf-8") as file:
     database = json.load(file)
