@@ -378,9 +378,17 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     state = admin_state(user_id)
 
     if state == "waiting_password":
-        settings = load_settings()
-        correct  = settings.get("admin_password", ADMIN_PASS)
-        if user_message == correct:
+    # Delete the password message immediately
+    try:
+        await context.bot.delete_message(
+            chat_id=update.message.chat_id,
+            message_id=update.message.message_id
+        )
+    except Exception:
+        pass
+    settings = load_settings()
+    correct  = settings.get("admin_password", ADMIN_PASS)
+    if user_message == correct:
             set_admin_state(user_id, "logged_in")
             await send_admin_menu(update, context)
         else:
