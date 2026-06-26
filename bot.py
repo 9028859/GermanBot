@@ -15,14 +15,14 @@ from telegram.ext import (
 # CONFIG
 # ─────────────────────────────────────────────
 TOKEN         = os.getenv("BOT_TOKEN")
-ADMIN_ID      = os.getenv("ADMIN_ID")          # Your Telegram user ID (string)
-ADMIN_PASS    = os.getenv("ADMIN_PASSWORD", "anand2024")  # Default password
+ADMIN_ID      = os.getenv("ADMIN_ID")
+ADMIN_PASS    = os.getenv("ADMIN_PASSWORD", "anand2024")
 
 # Files
-DB_FILE       = "database.json"
-STUDENTS_FILE = "students.json"
+DB_FILE        = "database.json"
+STUDENTS_FILE  = "students.json"
 EXERCISES_FILE = "exercises.json"
-SETTINGS_FILE = "settings.json"
+SETTINGS_FILE  = "settings.json"
 
 # ─────────────────────────────────────────────
 # FILE HELPERS
@@ -51,9 +51,9 @@ def load_settings():    return load_json(SETTINGS_FILE, {
 def save_settings(d):   save_json(SETTINGS_FILE, d)
 
 # ─────────────────────────────────────────────
-# ADMIN SESSION STORE  (in-memory)
+# ADMIN SESSION STORE
 # ─────────────────────────────────────────────
-admin_sessions = {}   # user_id (int) -> {"state": ..., "data": ...}
+admin_sessions = {}
 
 def is_admin_logged_in(user_id: int) -> bool:
     return admin_sessions.get(user_id, {}).get("state") == "logged_in"
@@ -74,7 +74,6 @@ def clear_admin(user_id: int):
 # STUDENT HELPERS
 # ─────────────────────────────────────────────
 def touch_student(user_id: str):
-    """Update last_active timestamp and streak."""
     students = load_students()
     if user_id not in students:
         return
@@ -84,8 +83,6 @@ def touch_student(user_id: str):
     if last != today_str:
         if last == (date.today().replace(day=date.today().day - 1)).isoformat():
             s["streak"] = s.get("streak", 0) + 1
-        elif last == today_str:
-            pass
         else:
             s["streak"] = 1
         s["last_active_date"] = today_str
@@ -116,19 +113,19 @@ def admin_menu_keyboard():
 
 def settings_keyboard():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("🔑 Change Password",        callback_data="set_password")],
-        [InlineKeyboardButton("🕐 Daily Exercise Time",    callback_data="set_time")],
-        [InlineKeyboardButton("🔔 Toggle Reminders",       callback_data="set_reminders")],
-        [InlineKeyboardButton("➕ Add Vocabulary",         callback_data="set_addvocab")],
-        [InlineKeyboardButton("📝 Add Exercise",           callback_data="set_addexercise")],
-        [InlineKeyboardButton("🔙 Back",                   callback_data="adm_back")],
+        [InlineKeyboardButton("🔑 Change Password",      callback_data="set_password")],
+        [InlineKeyboardButton("🕐 Daily Exercise Time",  callback_data="set_time")],
+        [InlineKeyboardButton("🔔 Toggle Reminders",     callback_data="set_reminders")],
+        [InlineKeyboardButton("➕ Add Vocabulary",       callback_data="set_addvocab")],
+        [InlineKeyboardButton("📝 Add Exercise",         callback_data="set_addexercise")],
+        [InlineKeyboardButton("🔙 Back",                 callback_data="adm_back")],
     ])
 
 def back_keyboard():
     return InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back to Menu", callback_data="adm_back")]])
 
 # ─────────────────────────────────────────────
-# /administrator  COMMAND
+# /administrator COMMAND
 # ─────────────────────────────────────────────
 async def cmd_administrator(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -154,7 +151,7 @@ async def send_admin_menu(update_or_query, context):
         await update_or_query.edit_message_text(text, parse_mode="Markdown", reply_markup=kb)
 
 # ─────────────────────────────────────────────
-# CALLBACK QUERY HANDLER  (inline buttons)
+# CALLBACK QUERY HANDLER
 # ─────────────────────────────────────────────
 async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query   = update.callback_query
@@ -166,7 +163,6 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("⛔ Session expired. Use /administrator to login again.")
         return
 
-    # ── BACK TO MENU ──
     if data == "adm_back":
         set_admin_state(user_id, "logged_in")
         await query.edit_message_text(
@@ -176,13 +172,11 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    # ── LOGOUT ──
     if data == "adm_logout":
         clear_admin(user_id)
         await query.edit_message_text("👋 Logged out successfully.")
         return
 
-    # ── STUDENTS LIST ──
     if data == "adm_students":
         students = load_students()
         if not students:
@@ -205,7 +199,6 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    # ── SINGLE STUDENT ──
     if data.startswith("student_"):
         uid      = data[len("student_"):]
         students = load_students()
@@ -234,7 +227,6 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    # ── STATISTICS ──
     if data == "adm_stats":
         students = load_students()
         counts   = {"A1": 0, "A2": 0, "B1": 0, "B2": 0}
@@ -246,10 +238,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 counts[lv] += 1
             if s.get("last_active_date", "") == today:
                 active_today += 1
-        exercises = load_exercises()
-        total_completed = sum(
-            s.get("exercises_completed", 0) for s in students.values()
-        )
+        total_completed = sum(s.get("exercises_completed", 0) for s in students.values())
         text = (
             f"📊 *Statistics*\n\n"
             f"👥 *Total Students:* {len(students)}\n\n"
@@ -263,7 +252,6 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(text, parse_mode="Markdown", reply_markup=back_keyboard())
         return
 
-    # ── BROADCAST ──
     if data == "adm_broadcast":
         set_admin_state(user_id, "broadcast_message")
         await query.edit_message_text(
@@ -272,7 +260,6 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    # ── SETTINGS MENU ──
     if data == "adm_settings":
         settings = load_settings()
         reminder = "✅ ON" if settings.get("reminders_enabled") else "❌ OFF"
@@ -285,19 +272,16 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(text, parse_mode="Markdown", reply_markup=settings_keyboard())
         return
 
-    # ── CHANGE PASSWORD ──
     if data == "set_password":
         set_admin_state(user_id, "set_password")
         await query.edit_message_text("🔑 Enter your *new admin password*:", parse_mode="Markdown")
         return
 
-    # ── DAILY TIME ──
     if data == "set_time":
         set_admin_state(user_id, "set_time")
         await query.edit_message_text("🕐 Enter the new daily exercise time (e.g. *08:30*):", parse_mode="Markdown")
         return
 
-    # ── TOGGLE REMINDERS ──
     if data == "set_reminders":
         settings = load_settings()
         settings["reminders_enabled"] = not settings.get("reminders_enabled", True)
@@ -310,7 +294,6 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    # ── ADD VOCAB / EXERCISE CHOICE ──
     if data == "set_addvocab":
         set_admin_state(user_id, "add_vocab")
         await query.edit_message_text(
@@ -378,17 +361,16 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     state = admin_state(user_id)
 
     if state == "waiting_password":
-    # Delete the password message immediately
-    try:
-        await context.bot.delete_message(
-            chat_id=update.message.chat_id,
-            message_id=update.message.message_id
-        )
-    except Exception:
-        pass
-    settings = load_settings()
-    correct  = settings.get("admin_password", ADMIN_PASS)
-    if user_message == correct:
+        try:
+            await context.bot.delete_message(
+                chat_id=update.message.chat_id,
+                message_id=update.message.message_id
+            )
+        except Exception:
+            pass
+        settings = load_settings()
+        correct  = settings.get("admin_password", ADMIN_PASS)
+        if user_message == correct:
             set_admin_state(user_id, "logged_in")
             await send_admin_menu(update, context)
         else:
@@ -441,8 +423,8 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if state == "add_vocab":
         if "=" in user_message:
-            parts = user_message.split("=", 1)
-            word  = parts[0].strip().lower()
+            parts   = user_message.split("=", 1)
+            word    = parts[0].strip().lower()
             meaning = parts[1].strip()
             database = load_database()
             database[word] = meaning
@@ -527,7 +509,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Active student
     touch_student(uid_str)
-    name = student.get("name", "")
+    name     = student.get("name", "")
     database = load_database()
 
     if user_message.lower() in database:
