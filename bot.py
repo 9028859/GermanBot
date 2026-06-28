@@ -14,15 +14,16 @@ from telegram.ext import (
 # ─────────────────────────────────────────────
 # CONFIG
 # ─────────────────────────────────────────────
-TOKEN         = os.getenv("BOT_TOKEN")
-ADMIN_ID      = os.getenv("ADMIN_ID")
-ADMIN_PASS    = os.getenv("ADMIN_PASSWORD", "anand2024")
+TOKEN          = os.getenv("BOT_TOKEN")
+ADMIN_ID       = os.getenv("ADMIN_ID")
+ADMIN_PASS     = os.getenv("ADMIN_PASSWORD", "anand2024")
 
 # Files
 DB_FILE        = "database.json"
 STUDENTS_FILE  = "students.json"
 EXERCISES_FILE = "exercises.json"
 SETTINGS_FILE  = "settings.json"
+WHITELIST_FILE = "whitelist.json"
 
 # ─────────────────────────────────────────────
 # FILE HELPERS
@@ -46,9 +47,28 @@ def save_exercises(d):  save_json(EXERCISES_FILE, d)
 def load_settings():    return load_json(SETTINGS_FILE, {
     "admin_password": ADMIN_PASS,
     "daily_exercise_time": "09:00",
-    "reminders_enabled": True
+    "reminders_enabled": True,
+    "whitelist_enabled": False
 })
 def save_settings(d):   save_json(SETTINGS_FILE, d)
+def load_whitelist():   return load_json(WHITELIST_FILE, {"ids": [], "usernames": []})
+def save_whitelist(d):  save_json(WHITELIST_FILE, d)
+
+# ─────────────────────────────────────────────
+# WHITELIST CHECK
+# ─────────────────────────────────────────────
+def is_allowed(user_id: int, username: str) -> bool:
+    settings = load_settings()
+    if not settings.get("whitelist_enabled", False):
+        return True  # whitelist off = open to everyone
+    whitelist = load_whitelist()
+    allowed_ids = [str(i) for i in whitelist.get("ids", [])]
+    allowed_usernames = [u.lower().lstrip("@") for u in whitelist.get("usernames", [])]
+    if str(user_id) in allowed_ids:
+        return True
+    if username and username.lower().lstrip("@") in allowed_usernames:
+        return True
+    return False
 
 # ─────────────────────────────────────────────
 # ADMIN SESSION STORE
@@ -104,11 +124,12 @@ def level_keyboard():
 
 def admin_menu_keyboard():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("📚 Students",   callback_data="adm_students")],
-        [InlineKeyboardButton("📊 Statistics", callback_data="adm_stats")],
-        [InlineKeyboardButton("📤 Broadcast",  callback_data="adm_broadcast")],
-        [InlineKeyboardButton("⚙️ Settings",   callback_data="adm_settings")],
-        [InlineKeyboardButton("🚪 Logout",     callback_data="adm_logout")],
+        [InlineKeyboardButton("📚 Students",     callback_data="adm_students")],
+        [InlineKeyboardButton("📊 Statistics",   callback_data="adm_stats")],
+        [InlineKeyboardButton("📤 Broadcast",    callback_data="adm_broadcast")],
+        [InlineKeyboardButton("🔒 Whitelist",    callback_data="adm_whitelist")],
+        [InlineKeyboardButton("⚙️ Settings",     callback_data="adm_settings")],
+        [InlineKeyboardButton("🚪 Logout",       callback_data="adm_logout")],
     ])
 
 def settings_keyboard():
@@ -119,6 +140,18 @@ def settings_keyboard():
         [InlineKeyboardButton("➕ Add Vocabulary",       callback_data="set_addvocab")],
         [InlineKeyboardButton("📝 Add Exercise",         callback_data="set_addexercise")],
         [InlineKeyboardButton("🔙 Back",                 callback_data="adm_back")],
+    ])
+
+def whitelist_keyboard():
+    settings = load_settings()
+    status = "✅ ON" if settings.get("whitelist_enabled") else "❌ OFF"
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(f"🔒 Whitelist: {status}",     callback_data="wl_toggle")],
+        [InlineKeyboardButton("➕ Add by Telegram ID",       callback_data="wl_add_id")],
+        [InlineKeyboardButton("➕ Add by Username (@user)",  callback_data="wl_add_username")],
+        [InlineKeyboardButton("👁 View Whitelist",           callback_data="wl_view")],
+        [InlineKeyboardButton("❌ Remove Entry",             callback_data="wl_remove")],
+        [InlineKeyboardButton("🔙 Back",                     callback_data="adm_back")],
     ])
 
 def back_keyboard():
@@ -163,6 +196,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("⛔ Session expired. Use /administrator to login again.")
         return
 
+    # ── BACK TO MENU ──
     if data == "adm_back":
         set_admin_state(user_id, "logged_in")
         await query.edit_message_text(
@@ -172,11 +206,13 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
+    # ── LOGOUT ──
     if data == "adm_logout":
         clear_admin(user_id)
         await query.edit_message_text("👋 Logged out successfully.")
         return
 
+    # ── STUDENTS LIST ──
     if data == "adm_students":
         students = load_students()
         if not students:
@@ -199,6 +235,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
+    # ── SINGLE STUDENT ──
     if data.startswith("student_"):
         uid      = data[len("student_"):]
         students = load_students()
@@ -209,9 +246,11 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         points   = s.get("points", 0)
         joined   = s.get("joined", "—")
         last     = s.get("last_active", "—")
+        username = s.get("username", "—")
         text = (
             f"👤 *Name:* {name}\n"
             f"🆔 *Telegram ID:* `{uid}`\n"
+            f"👤 *Username:* @{username}\n"
             f"📖 *Level:* {level}\n"
             f"🔥 *Streak:* {streak} days\n"
             f"⭐ *Points:* {points}\n"
@@ -222,11 +261,33 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text,
             parse_mode="Markdown",
             reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("➕ Add to Whitelist", callback_data=f"wl_addstudent_{uid}")],
                 [InlineKeyboardButton("🔙 Back to Students", callback_data="adm_students")]
             ])
         )
         return
 
+    # ── ADD STUDENT TO WHITELIST FROM PROFILE ──
+    if data.startswith("wl_addstudent_"):
+        uid = data[len("wl_addstudent_"):]
+        whitelist = load_whitelist()
+        if uid not in [str(i) for i in whitelist["ids"]]:
+            whitelist["ids"].append(uid)
+            save_whitelist(whitelist)
+            await query.edit_message_text(
+                f"✅ Student ID `{uid}` added to whitelist!",
+                parse_mode="Markdown",
+                reply_markup=back_keyboard()
+            )
+        else:
+            await query.edit_message_text(
+                f"ℹ️ Student ID `{uid}` is already in the whitelist.",
+                parse_mode="Markdown",
+                reply_markup=back_keyboard()
+            )
+        return
+
+    # ── STATISTICS ──
     if data == "adm_stats":
         students = load_students()
         counts   = {"A1": 0, "A2": 0, "B1": 0, "B2": 0}
@@ -252,14 +313,101 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(text, parse_mode="Markdown", reply_markup=back_keyboard())
         return
 
+    # ── BROADCAST ──
     if data == "adm_broadcast":
         set_admin_state(user_id, "broadcast_message")
         await query.edit_message_text(
-            "📤 *Broadcast*\n\nType the message you want to send to ALL students.\n\nSend /cancel to abort.",
+            "📤 *Broadcast*\n\nType the message to send to ALL students.\n\nSend /cancel to abort.",
             parse_mode="Markdown"
         )
         return
 
+    # ── WHITELIST PANEL ──
+    if data == "adm_whitelist":
+        whitelist = load_whitelist()
+        settings  = load_settings()
+        status    = "✅ ON" if settings.get("whitelist_enabled") else "❌ OFF"
+        total_ids = len(whitelist.get("ids", []))
+        total_un  = len(whitelist.get("usernames", []))
+        text = (
+            f"🔒 *Whitelist Panel*\n\n"
+            f"Status: *{status}*\n"
+            f"Allowed IDs: *{total_ids}*\n"
+            f"Allowed Usernames: *{total_un}*\n\n"
+            f"When ON, only whitelisted users can use the bot."
+        )
+        await query.edit_message_text(text, parse_mode="Markdown", reply_markup=whitelist_keyboard())
+        return
+
+    if data == "wl_toggle":
+        settings = load_settings()
+        settings["whitelist_enabled"] = not settings.get("whitelist_enabled", False)
+        save_settings(settings)
+        status = "✅ ON" if settings["whitelist_enabled"] else "❌ OFF"
+        await query.edit_message_text(
+            f"🔒 Whitelist is now *{status}*",
+            parse_mode="Markdown",
+            reply_markup=whitelist_keyboard()
+        )
+        return
+
+    if data == "wl_add_id":
+        set_admin_state(user_id, "wl_add_id")
+        await query.edit_message_text(
+            "➕ *Add by Telegram ID*\n\n"
+            "Send the student's Telegram ID (numbers only).\n\n"
+            "💡 Students can find their ID by messaging @userinfobot\n\n"
+            "Send /cancel to abort.",
+            parse_mode="Markdown"
+        )
+        return
+
+    if data == "wl_add_username":
+        set_admin_state(user_id, "wl_add_username")
+        await query.edit_message_text(
+            "➕ *Add by Username*\n\n"
+            "Send the student's Telegram username.\n"
+            "Example: `@johnsmith` or just `johnsmith`\n\n"
+            "Send /cancel to abort.",
+            parse_mode="Markdown"
+        )
+        return
+
+    if data == "wl_view":
+        whitelist = load_whitelist()
+        ids       = whitelist.get("ids", [])
+        usernames = whitelist.get("usernames", [])
+        lines = ["🔒 *Whitelist*\n"]
+        if ids:
+            lines.append("*By Telegram ID:*")
+            for i, tid in enumerate(ids, 1):
+                lines.append(f"{i}. `{tid}`")
+        if usernames:
+            lines.append("\n*By Username:*")
+            for i, un in enumerate(usernames, 1):
+                lines.append(f"{i}. @{un}")
+        if not ids and not usernames:
+            lines.append("_No entries yet._")
+        await query.edit_message_text(
+            "\n".join(lines),
+            parse_mode="Markdown",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔙 Back", callback_data="adm_whitelist")]
+            ])
+        )
+        return
+
+    if data == "wl_remove":
+        set_admin_state(user_id, "wl_remove")
+        await query.edit_message_text(
+            "❌ *Remove from Whitelist*\n\n"
+            "Send the Telegram ID or username to remove.\n\n"
+            "Send /cancel to abort.",
+            parse_mode="Markdown"
+        )
+        return
+
+    # ── SETTINGS MENU ──
     if data == "adm_settings":
         settings = load_settings()
         reminder = "✅ ON" if settings.get("reminders_enabled") else "❌ OFF"
@@ -298,8 +446,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         set_admin_state(user_id, "add_vocab")
         await query.edit_message_text(
             "📖 *Add Vocabulary*\n\n"
-            "Send the word and meaning in this format:\n"
-            "`word = meaning`\n\n"
+            "Format: `word = meaning`\n"
             "Example: `Haus = House`\n\n"
             "Send /cancel to abort.",
             parse_mode="Markdown"
@@ -309,8 +456,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data == "set_addexercise":
         set_admin_state(user_id, "add_exercise_level")
         await query.edit_message_text(
-            "📝 *Add Exercise*\n\n"
-            "First, choose the level this exercise is for:",
+            "📝 *Add Exercise*\n\nChoose the level:",
             parse_mode="Markdown",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("A1", callback_data="exlevel_A1"),
@@ -325,9 +471,8 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         level = data[len("exlevel_"):]
         set_admin_state(user_id, "add_exercise_text", {"level": level})
         await query.edit_message_text(
-            f"📝 *Adding exercise for level {level}*\n\n"
-            "Send the exercise in this format:\n"
-            "`Question | Answer`\n\n"
+            f"📝 *Exercise for level {level}*\n\n"
+            "Format: `Question | Answer`\n"
             "Example: `Was ist die Hauptstadt von Deutschland? | Berlin`\n\n"
             "Send /cancel to abort.",
             parse_mode="Markdown"
@@ -356,6 +501,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_message = update.message.text.strip()
     user_id      = update.effective_user.id
     uid_str      = str(user_id)
+    username     = update.effective_user.username or ""
 
     # ── ADMIN FLOW ──
     state = admin_state(user_id)
@@ -403,10 +549,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         settings["admin_password"] = user_message
         save_settings(settings)
         set_admin_state(user_id, "logged_in")
-        await update.message.reply_text(
-            "✅ Password updated successfully!",
-            reply_markup=admin_menu_keyboard()
-        )
+        await update.message.reply_text("✅ Password updated!", reply_markup=admin_menu_keyboard())
         return
 
     if state == "set_time":
@@ -436,9 +579,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 reply_markup=admin_menu_keyboard()
             )
         else:
-            await update.message.reply_text(
-                "⚠️ Wrong format. Use: `word = meaning`", parse_mode="Markdown"
-            )
+            await update.message.reply_text("⚠️ Wrong format. Use: `word = meaning`", parse_mode="Markdown")
         return
 
     if state == "add_exercise_text":
@@ -453,15 +594,77 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
             save_exercises(exercises)
             set_admin_state(user_id, "logged_in")
             await update.message.reply_text(
-                f"✅ Exercise added for *{level}*!\n\n"
-                f"❓ {question}\n✅ {answer}",
+                f"✅ Exercise added for *{level}*!\n\n❓ {question}\n✅ {answer}",
                 parse_mode="Markdown",
                 reply_markup=admin_menu_keyboard()
             )
         else:
+            await update.message.reply_text("⚠️ Wrong format. Use: `Question | Answer`", parse_mode="Markdown")
+        return
+
+    if state == "wl_add_id":
+        entry = user_message.strip()
+        if entry.isdigit():
+            whitelist = load_whitelist()
+            if entry not in [str(i) for i in whitelist["ids"]]:
+                whitelist["ids"].append(entry)
+                save_whitelist(whitelist)
+                set_admin_state(user_id, "logged_in")
+                await update.message.reply_text(
+                    f"✅ Telegram ID `{entry}` added to whitelist!",
+                    parse_mode="Markdown",
+                    reply_markup=admin_menu_keyboard()
+                )
+            else:
+                await update.message.reply_text("ℹ️ This ID is already in the whitelist.")
+        else:
+            await update.message.reply_text("⚠️ Please send numbers only (Telegram ID).")
+        return
+
+    if state == "wl_add_username":
+        entry = user_message.strip().lstrip("@").lower()
+        whitelist = load_whitelist()
+        if entry not in [u.lower() for u in whitelist["usernames"]]:
+            whitelist["usernames"].append(entry)
+            save_whitelist(whitelist)
+            set_admin_state(user_id, "logged_in")
             await update.message.reply_text(
-                "⚠️ Wrong format. Use: `Question | Answer`", parse_mode="Markdown"
+                f"✅ Username @{entry} added to whitelist!",
+                parse_mode="Markdown",
+                reply_markup=admin_menu_keyboard()
             )
+        else:
+            await update.message.reply_text("ℹ️ This username is already in the whitelist.")
+        return
+
+    if state == "wl_remove":
+        entry = user_message.strip().lstrip("@").lower()
+        whitelist = load_whitelist()
+        removed = False
+        if entry.isdigit() and entry in [str(i) for i in whitelist["ids"]]:
+            whitelist["ids"] = [i for i in whitelist["ids"] if str(i) != entry]
+            removed = True
+        elif entry in [u.lower() for u in whitelist["usernames"]]:
+            whitelist["usernames"] = [u for u in whitelist["usernames"] if u.lower() != entry]
+            removed = True
+        if removed:
+            save_whitelist(whitelist)
+            set_admin_state(user_id, "logged_in")
+            await update.message.reply_text(
+                f"✅ `{entry}` removed from whitelist.",
+                parse_mode="Markdown",
+                reply_markup=admin_menu_keyboard()
+            )
+        else:
+            await update.message.reply_text("⚠️ Entry not found in whitelist.")
+        return
+
+    # ── WHITELIST CHECK FOR STUDENTS ──
+    if str(user_id) != str(ADMIN_ID) and not is_allowed(user_id, username):
+        await update.message.reply_text(
+            "⛔ Sorry, this bot is currently private.\n\n"
+            "Please contact your German tutor to get access."
+        )
         return
 
     # ── STUDENT FLOW ──
@@ -471,6 +674,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         students[uid_str] = {
             "level": "",
             "name": "",
+            "username": username,
             "status": "waiting_for_level",
             "points": 0,
             "streak": 0,
