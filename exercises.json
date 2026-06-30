@@ -1,1 +1,1962 @@
-[]
+[
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Wähle den richtigen Artikel: ___ Haus ist groß.",
+        "options": [
+            "Der",
+            "Die",
+            "Das"
+        ],
+        "answer": "Das"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Wähle den richtigen Artikel: ___ Frau heißt Anna.",
+        "options": [
+            "Der",
+            "Die",
+            "Das"
+        ],
+        "answer": "Die"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Wähle den richtigen Artikel: ___ Mann ist Lehrer.",
+        "options": [
+            "Der",
+            "Die",
+            "Das"
+        ],
+        "answer": "Der"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Ich ___ Student.",
+        "options": [
+            "bin",
+            "bist",
+            "ist"
+        ],
+        "answer": "bin"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Du ___ sehr nett.",
+        "options": [
+            "bin",
+            "bist",
+            "ist"
+        ],
+        "answer": "bist"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Er ___ aus Indien.",
+        "options": [
+            "bin",
+            "bist",
+            "ist"
+        ],
+        "answer": "ist"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Wir ___ Schüler.",
+        "options": [
+            "sind",
+            "seid",
+            "ist"
+        ],
+        "answer": "sind"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Ich ___ ein Buch.",
+        "options": [
+            "habe",
+            "hast",
+            "hat"
+        ],
+        "answer": "habe"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Du ___ einen Hund.",
+        "options": [
+            "habe",
+            "hast",
+            "hat"
+        ],
+        "answer": "hast"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Sie (er/sie/es) ___ Zeit.",
+        "options": [
+            "habe",
+            "hast",
+            "hat"
+        ],
+        "answer": "hat"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Wähle das richtige Pronomen: ___ heißt Tom. (he)",
+        "options": [
+            "Er",
+            "Sie",
+            "Es"
+        ],
+        "answer": "Er"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Plural von 'das Kind' ist:",
+        "options": [
+            "die Kinder",
+            "die Kindes",
+            "der Kinder"
+        ],
+        "answer": "die Kinder"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Plural von 'der Mann' ist:",
+        "options": [
+            "die Männer",
+            "die Manns",
+            "der Männer"
+        ],
+        "answer": "die Männer"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Wähle die richtige Verbform: Ich ___ Deutsch. (lernen)",
+        "options": [
+            "lerne",
+            "lernst",
+            "lernt"
+        ],
+        "answer": "lerne"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Wähle die richtige Verbform: Du ___ schnell. (laufen)",
+        "options": [
+            "laufe",
+            "läufst",
+            "läuft"
+        ],
+        "answer": "läufst"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Wähle die richtige Verbform: Er ___ jeden Tag. (arbeiten)",
+        "options": [
+            "arbeite",
+            "arbeitest",
+            "arbeitet"
+        ],
+        "answer": "arbeitet"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Was ist die richtige Wortstellung? ___",
+        "options": [
+            "Ich gehe heute zur Schule.",
+            "Ich heute gehe zur Schule.",
+            "Gehe ich heute zur Schule."
+        ],
+        "answer": "Ich gehe heute zur Schule."
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Frage richtig bilden: ___ heißt du?",
+        "options": [
+            "Was",
+            "Wie",
+            "Wo"
+        ],
+        "answer": "Wie"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Frage richtig bilden: ___ wohnst du?",
+        "options": [
+            "Was",
+            "Wie",
+            "Wo"
+        ],
+        "answer": "Wo"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Frage richtig bilden: ___ kommst du?",
+        "options": [
+            "Wann",
+            "Woher",
+            "Wie"
+        ],
+        "answer": "Woher"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Negation: Ich habe ___ Hund.",
+        "options": [
+            "kein",
+            "keine",
+            "nicht"
+        ],
+        "answer": "keinen"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Negation: Das ist ___ richtig.",
+        "options": [
+            "kein",
+            "keine",
+            "nicht"
+        ],
+        "answer": "nicht"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Possessivpronomen: Das ist ___ Buch. (my)",
+        "options": [
+            "mein",
+            "meine",
+            "meins"
+        ],
+        "answer": "mein"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Possessivpronomen: Das ist ___ Tasche. (my, feminine)",
+        "options": [
+            "mein",
+            "meine",
+            "meins"
+        ],
+        "answer": "meine"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Wähle den Akkusativ-Artikel: Ich sehe ___ Mann.",
+        "options": [
+            "der",
+            "den",
+            "dem"
+        ],
+        "answer": "den"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Wähle das richtige Verb: Ich ___ ins Kino. (gehen)",
+        "options": [
+            "gehe",
+            "gehst",
+            "geht"
+        ],
+        "answer": "gehe"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Wähle die richtige Zahl: 'fünfzehn' ist?",
+        "options": [
+            "15",
+            "50",
+            "5"
+        ],
+        "answer": "15"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Wähle die richtige Zahl: 'dreißig' ist?",
+        "options": [
+            "13",
+            "30",
+            "3"
+        ],
+        "answer": "30"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Welches Wort passt? Ich trinke ___ Kaffee.",
+        "options": [
+            "ein",
+            "eine",
+            "einen"
+        ],
+        "answer": "einen"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Welches Wort passt? Ich esse ___ Apfel.",
+        "options": [
+            "ein",
+            "eine",
+            "einen"
+        ],
+        "answer": "einen"
+    },
+    {
+        "level": "A1",
+        "type": "short",
+        "question": "Konjugiere 'sein' für 'ihr' (you all).",
+        "answer": "ihr seid"
+    },
+    {
+        "level": "A1",
+        "type": "short",
+        "question": "Konjugiere 'haben' für 'sie' (they).",
+        "answer": "sie haben"
+    },
+    {
+        "level": "A1",
+        "type": "short",
+        "question": "Schreibe den Plural von 'die Frau'.",
+        "answer": "die Frauen"
+    },
+    {
+        "level": "A1",
+        "type": "short",
+        "question": "Schreibe den Plural von 'das Auto'.",
+        "answer": "die Autos"
+    },
+    {
+        "level": "A1",
+        "type": "short",
+        "question": "Bilde eine Frage mit 'wo': (Du wohnst in Berlin)",
+        "answer": "Wo wohnst du"
+    },
+    {
+        "level": "A1",
+        "type": "short",
+        "question": "Verneine den Satz: Ich habe Zeit.",
+        "answer": "Ich habe keine Zeit"
+    },
+    {
+        "level": "A1",
+        "type": "short",
+        "question": "Verneine den Satz: Das ist gut.",
+        "answer": "Das ist nicht gut"
+    },
+    {
+        "level": "A1",
+        "type": "short",
+        "question": "Schreibe den Akkusativ von 'der Tisch' in: Ich sehe ___.",
+        "answer": "den Tisch"
+    },
+    {
+        "level": "A1",
+        "type": "short",
+        "question": "Schreibe die richtige Form: Ich (mögen) ___ Tee.",
+        "answer": "mag"
+    },
+    {
+        "level": "A1",
+        "type": "short",
+        "question": "Schreibe die richtige Form: Du (können) ___ gut Deutsch.",
+        "answer": "kannst"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Welches Modalverb passt? Ich ___ Deutsch sprechen. (can)",
+        "options": [
+            "kann",
+            "muss",
+            "will"
+        ],
+        "answer": "kann"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Welches Modalverb passt? Du ___ jetzt gehen. (must)",
+        "options": [
+            "kannst",
+            "musst",
+            "willst"
+        ],
+        "answer": "musst"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Welches Modalverb passt? Er ___ ein Eis essen. (wants to)",
+        "options": [
+            "kann",
+            "muss",
+            "will"
+        ],
+        "answer": "will"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Wähle das richtige Präfix-Verb: Ich stehe um 7 Uhr ___.",
+        "options": [
+            "auf",
+            "ab",
+            "an"
+        ],
+        "answer": "auf"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Wähle die Präposition: Ich gehe ___ Schule.",
+        "options": [
+            "in die",
+            "in der",
+            "zu der"
+        ],
+        "answer": "in die"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Wähle die Präposition: Ich wohne ___ Berlin.",
+        "options": [
+            "in",
+            "auf",
+            "an"
+        ],
+        "answer": "in"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Wähle die Präposition: Das Buch ist ___ dem Tisch.",
+        "options": [
+            "auf",
+            "in",
+            "unter"
+        ],
+        "answer": "auf"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Was ist das Gegenteil von 'groß'?",
+        "options": [
+            "klein",
+            "alt",
+            "neu"
+        ],
+        "answer": "klein"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Was ist das Gegenteil von 'schnell'?",
+        "options": [
+            "langsam",
+            "klein",
+            "kalt"
+        ],
+        "answer": "langsam"
+    },
+    {
+        "level": "A1",
+        "type": "mcq",
+        "question": "Wähle die richtige Uhrzeit: Es ist ___ Uhr. (3 o'clock)",
+        "options": [
+            "drei",
+            "dritte",
+            "dreiig"
+        ],
+        "answer": "drei"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle das Perfekt: Ich ___ gestern ins Kino gegangen.",
+        "options": [
+            "bin",
+            "habe",
+            "war"
+        ],
+        "answer": "bin"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle das Perfekt: Ich ___ ein Buch gelesen.",
+        "options": [
+            "bin",
+            "habe",
+            "war"
+        ],
+        "answer": "habe"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle das Partizip II von 'machen'.",
+        "options": [
+            "gemacht",
+            "gemachen",
+            "machte"
+        ],
+        "answer": "gemacht"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle das Partizip II von 'essen'.",
+        "options": [
+            "gegessen",
+            "gegesst",
+            "aß"
+        ],
+        "answer": "gegessen"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle das Partizip II von 'fahren'.",
+        "options": [
+            "gefahren",
+            "gefahrt",
+            "fuhrte"
+        ],
+        "answer": "gefahren"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle die richtige Präteritum-Form: Ich ___ müde. (sein)",
+        "options": [
+            "war",
+            "bin",
+            "wäre"
+        ],
+        "answer": "war"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle die richtige Präteritum-Form: Ich ___ Hunger. (haben)",
+        "options": [
+            "hatte",
+            "habe",
+            "hätte"
+        ],
+        "answer": "hatte"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle den Dativ-Artikel: Ich gebe ___ Mann das Buch.",
+        "options": [
+            "der",
+            "den",
+            "dem"
+        ],
+        "answer": "dem"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle den Dativ-Artikel: Ich helfe ___ Frau.",
+        "options": [
+            "der",
+            "die",
+            "den"
+        ],
+        "answer": "der"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle die Konjunktion: Ich bleibe zu Hause, ___ es regnet.",
+        "options": [
+            "weil",
+            "aber",
+            "und"
+        ],
+        "answer": "weil"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle die Konjunktion: Ich mag Tee, ___ ich mag auch Kaffee.",
+        "options": [
+            "weil",
+            "aber",
+            "und"
+        ],
+        "answer": "und"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle die Konjunktion: Ich bin müde, ___ ich arbeite weiter.",
+        "options": [
+            "weil",
+            "aber",
+            "dass"
+        ],
+        "answer": "aber"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle das richtige Reflexivpronomen: Ich freue ___ auf das Wochenende.",
+        "options": [
+            "mich",
+            "dich",
+            "sich"
+        ],
+        "answer": "mich"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle das richtige Reflexivpronomen: Du interessierst ___ für Musik.",
+        "options": [
+            "mich",
+            "dich",
+            "sich"
+        ],
+        "answer": "dich"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle den Komparativ von 'gut'.",
+        "options": [
+            "besser",
+            "guter",
+            "gutest"
+        ],
+        "answer": "besser"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle den Komparativ von 'viel'.",
+        "options": [
+            "mehr",
+            "vieler",
+            "meister"
+        ],
+        "answer": "mehr"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle den Superlativ von 'gut'.",
+        "options": [
+            "am besten",
+            "besser",
+            "gutst"
+        ],
+        "answer": "am besten"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Trennbares Verb: Ich rufe meine Mutter ___.",
+        "options": [
+            "an",
+            "ab",
+            "auf"
+        ],
+        "answer": "an"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Trennbares Verb: Der Zug kommt um 9 Uhr ___.",
+        "options": [
+            "an",
+            "aus",
+            "ein"
+        ],
+        "answer": "an"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle die richtige Präposition + Fall: Ich fahre ___ die Schule. (Akkusativ)",
+        "options": [
+            "in",
+            "zur",
+            "durch"
+        ],
+        "answer": "durch"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle die richtige Präposition: Ich warte ___ den Bus.",
+        "options": [
+            "auf",
+            "für",
+            "an"
+        ],
+        "answer": "auf"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle die richtige Präposition: Ich freue mich ___ das Geschenk.",
+        "options": [
+            "auf",
+            "über",
+            "an"
+        ],
+        "answer": "über"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle die richtige Zeitform: Morgen ___ ich nach Berlin fahren. (Futur)",
+        "options": [
+            "werde",
+            "wurde",
+            "würde"
+        ],
+        "answer": "werde"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle das richtige Wort: Ich bin ___ als mein Bruder. (older)",
+        "options": [
+            "älter",
+            "alter",
+            "am ältesten"
+        ],
+        "answer": "älter"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Indirekte Frage: Ich weiß nicht, ___ er kommt.",
+        "options": [
+            "ob",
+            "dass",
+            "weil"
+        ],
+        "answer": "ob"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Indirekte Frage: Ich weiß, ___ er müde ist.",
+        "options": [
+            "ob",
+            "dass",
+            "weil"
+        ],
+        "answer": "dass"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle die richtige Form: Wenn ich Zeit ___, komme ich.",
+        "options": [
+            "habe",
+            "hätte",
+            "hatte"
+        ],
+        "answer": "habe"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle das passende Modalverb im Präteritum: Ich ___ gestern nicht kommen. (could)",
+        "options": [
+            "konnte",
+            "kannte",
+            "kann"
+        ],
+        "answer": "konnte"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle das richtige Pronomen im Dativ: Er gibt ___ das Geschenk. (mir/mich)",
+        "options": [
+            "mir",
+            "mich",
+            "meine"
+        ],
+        "answer": "mir"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle die richtige Adjektivendung: Das ist ein groß__ Haus.",
+        "options": [
+            "es",
+            "er",
+            "e"
+        ],
+        "answer": "es"
+    },
+    {
+        "level": "A2",
+        "type": "short",
+        "question": "Schreibe das Perfekt von 'lesen' mit 'ich'.",
+        "answer": "ich habe gelesen"
+    },
+    {
+        "level": "A2",
+        "type": "short",
+        "question": "Schreibe das Perfekt von 'gehen' mit 'sie' (she).",
+        "answer": "sie ist gegangen"
+    },
+    {
+        "level": "A2",
+        "type": "short",
+        "question": "Bilde einen Satz mit 'obwohl'.",
+        "answer": "Obwohl es regnet, gehe ich raus"
+    },
+    {
+        "level": "A2",
+        "type": "short",
+        "question": "Bilde einen Satz mit 'weil'.",
+        "answer": "Ich bleibe zu Hause weil ich krank bin"
+    },
+    {
+        "level": "A2",
+        "type": "short",
+        "question": "Schreibe den Komparativ von 'teuer'.",
+        "answer": "teurer"
+    },
+    {
+        "level": "A2",
+        "type": "short",
+        "question": "Schreibe den Superlativ von 'schnell'.",
+        "answer": "am schnellsten"
+    },
+    {
+        "level": "A2",
+        "type": "short",
+        "question": "Wandle ins Perfekt um: Ich esse einen Apfel.",
+        "answer": "Ich habe einen Apfel gegessen"
+    },
+    {
+        "level": "A2",
+        "type": "short",
+        "question": "Wandle ins Perfekt um: Ich fahre nach Hause.",
+        "answer": "Ich bin nach Hause gefahren"
+    },
+    {
+        "level": "A2",
+        "type": "short",
+        "question": "Schreibe die richtige Dativform: Ich danke ___ (du).",
+        "answer": "dir"
+    },
+    {
+        "level": "A2",
+        "type": "short",
+        "question": "Schreibe die richtige Dativform: Ich helfe ___ (er).",
+        "answer": "ihm"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle die richtige Reihenfolge: Ich habe ___ gesehen. (ihn/das Buch)",
+        "options": [
+            "ihn gestern das Buch",
+            "gestern ihn",
+            "das Buch ihn"
+        ],
+        "answer": "ihn gestern das Buch"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle den richtigen Genitiv: Das ist das Auto ___ Mannes.",
+        "options": [
+            "der",
+            "des",
+            "dem"
+        ],
+        "answer": "des"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle den richtigen Genitiv: Das ist das Haus ___ Frau.",
+        "options": [
+            "der",
+            "des",
+            "dem"
+        ],
+        "answer": "der"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle die richtige Präposition + Dativ: Ich komme ___ der Schule.",
+        "options": [
+            "aus",
+            "durch",
+            "für"
+        ],
+        "answer": "aus"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle die richtige Form: Er ___ früher Fußball gespielt. (haben Präteritum)",
+        "options": [
+            "hat",
+            "hatte",
+            "hätte"
+        ],
+        "answer": "hat"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle die richtige Verbform: Wir ___ morgen ins Museum. (gehen Futur)",
+        "options": [
+            "gehen",
+            "gingen",
+            "gegangen"
+        ],
+        "answer": "gehen"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle die richtige Form: Ich habe das Auto ___ repariert. (lassen)",
+        "options": [
+            "lassen",
+            "gelassen",
+            "lasse"
+        ],
+        "answer": "lassen"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle die richtige Konjunktion: Ich gehe joggen, ___ es nicht regnet.",
+        "options": [
+            "wenn",
+            "weil",
+            "obwohl"
+        ],
+        "answer": "wenn"
+    },
+    {
+        "level": "A2",
+        "type": "mcq",
+        "question": "Wähle die richtige Form: Sie ___ jeden Morgen Kaffee. (trinken)",
+        "options": [
+            "trinkt",
+            "trinken",
+            "trinkst"
+        ],
+        "answer": "trinkt"
+    },
+    {
+        "level": "A2",
+        "type": "short",
+        "question": "Schreibe das Perfekt von 'kommen' mit 'wir'.",
+        "answer": "wir sind gekommen"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle die richtige Konjunktiv II Form: Wenn ich Geld ___, würde ich reisen.",
+        "options": [
+            "hätte",
+            "habe",
+            "hatte"
+        ],
+        "answer": "hätte"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle die richtige Konjunktiv II Form: Ich ___ gerne mehr Zeit haben.",
+        "options": [
+            "würde",
+            "werde",
+            "wurde"
+        ],
+        "answer": "würde"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle das Passiv: Das Haus ___ 1990 gebaut.",
+        "options": [
+            "wurde",
+            "wird",
+            "war"
+        ],
+        "answer": "wurde"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle das Passiv: Der Brief ___ geschrieben.",
+        "options": [
+            "wird",
+            "ist",
+            "war"
+        ],
+        "answer": "wird"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle die richtige Relativpronomen: Der Mann, ___ dort steht, ist mein Lehrer.",
+        "options": [
+            "der",
+            "die",
+            "das"
+        ],
+        "answer": "der"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle die richtige Relativpronomen: Die Frau, ___ ich kenne, ist nett.",
+        "options": [
+            "der",
+            "die",
+            "das"
+        ],
+        "answer": "die"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle die richtige Relativpronomen: Das Buch, ___ ich lese, ist interessant.",
+        "options": [
+            "der",
+            "die",
+            "das"
+        ],
+        "answer": "das"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle die richtige Konjunktion: ___ es regnet, gehe ich raus.",
+        "options": [
+            "Obwohl",
+            "Weil",
+            "Damit"
+        ],
+        "answer": "Obwohl"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle die richtige Konjunktion: Ich lerne fleißig, ___ ich die Prüfung bestehe.",
+        "options": [
+            "obwohl",
+            "damit",
+            "trotzdem"
+        ],
+        "answer": "damit"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle das richtige Wort: ___ war er müde, arbeitete er weiter.",
+        "options": [
+            "Obwohl",
+            "Deshalb",
+            "Damit"
+        ],
+        "answer": "Obwohl"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle die richtige Form: Er sagte, dass er ___ komme. (Konjunktiv I)",
+        "options": [
+            "komme",
+            "kommt",
+            "käme"
+        ],
+        "answer": "komme"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle die richtige indirekte Rede: Sie sagte, sie ___ müde.",
+        "options": [
+            "sei",
+            "ist",
+            "war"
+        ],
+        "answer": "sei"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle das Plusquamperfekt: Nachdem ich gegessen ___, ging ich aus.",
+        "options": [
+            "hatte",
+            "habe",
+            "hätte"
+        ],
+        "answer": "hatte"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle die richtige Präposition: Trotz ___ Regens gingen wir spazieren.",
+        "options": [
+            "des",
+            "dem",
+            "den"
+        ],
+        "answer": "des"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle die richtige Präposition: Während ___ Prüfung war ich nervös.",
+        "options": [
+            "der",
+            "die",
+            "dem"
+        ],
+        "answer": "der"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle die richtige Präposition: Wegen ___ Wetters bleiben wir zu Hause.",
+        "options": [
+            "des",
+            "dem",
+            "der"
+        ],
+        "answer": "des"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle die richtige Adjektivdeklination: Das ist ein interessant__ Buch.",
+        "options": [
+            "es",
+            "er",
+            "e"
+        ],
+        "answer": "es"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle die richtige Adjektivdeklination: Ich habe einen neu__ Computer.",
+        "options": [
+            "en",
+            "er",
+            "es"
+        ],
+        "answer": "en"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle das richtige Verb: Ich ___ mich an meine Kindheit. (erinnern)",
+        "options": [
+            "erinnere",
+            "erinnerst",
+            "erinnert"
+        ],
+        "answer": "erinnere"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle die richtige Form: Es wird erwartet, dass die Preise ___ steigen.",
+        "options": [
+            "werden",
+            "sind",
+            "haben"
+        ],
+        "answer": "werden"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle den Ausdruck: ___ ist es wichtig, früh aufzustehen.",
+        "options": [
+            "Meiner Meinung nach",
+            "Im Gegenteil",
+            "Trotzdem"
+        ],
+        "answer": "Meiner Meinung nach"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle den Ausdruck: Ich bin dafür, ___ es viele Vorteile hat.",
+        "options": [
+            "weil",
+            "obwohl",
+            "damit"
+        ],
+        "answer": "weil"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle die richtige Zeitform: Bevor ich nach Hause ging, ___ ich noch eingekauft.",
+        "options": [
+            "hatte",
+            "habe",
+            "hätte"
+        ],
+        "answer": "hatte"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle das richtige Modalverb im Konjunktiv II: Ich ___ das machen sollen.",
+        "options": [
+            "hätte",
+            "wäre",
+            "würde"
+        ],
+        "answer": "hätte"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle das richtige Wort: ___ trotz des schlechten Wetters spielten sie draußen.",
+        "options": [
+            "Jedoch",
+            "Obwohl",
+            "Sogar"
+        ],
+        "answer": "Sogar"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle den passenden Konnektor: Sie ist müde. ___ geht sie weiter zur Arbeit.",
+        "options": [
+            "Trotzdem",
+            "Deshalb",
+            "Damit"
+        ],
+        "answer": "Trotzdem"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle den passenden Konnektor: Er hat viel gelernt. ___ hat er die Prüfung bestanden.",
+        "options": [
+            "Trotzdem",
+            "Deshalb",
+            "Obwohl"
+        ],
+        "answer": "Deshalb"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle die richtige Verbform im Nebensatz: Ich weiß, dass er morgen ___.",
+        "options": [
+            "kommt",
+            "kommen",
+            "gekommen"
+        ],
+        "answer": "kommt"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle das richtige Reflexivverb: Ich ___ auf die Prüfung vor.",
+        "options": [
+            "bereite mich",
+            "bereite dich",
+            "bereitet sich"
+        ],
+        "answer": "bereite mich"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle das richtige Wort: Es ist wichtig, ___ man pünktlich ist.",
+        "options": [
+            "dass",
+            "ob",
+            "weil"
+        ],
+        "answer": "dass"
+    },
+    {
+        "level": "B1",
+        "type": "short",
+        "question": "Bilde einen Satz im Konjunktiv II: Wenn ich reich (sein) wäre...",
+        "answer": "Wenn ich reich wäre, würde ich ein Haus kaufen"
+    },
+    {
+        "level": "B1",
+        "type": "short",
+        "question": "Wandle ins Passiv um: Man baut das Gebäude.",
+        "answer": "Das Gebäude wird gebaut"
+    },
+    {
+        "level": "B1",
+        "type": "short",
+        "question": "Wandle ins Passiv um: Man hat den Brief geschrieben.",
+        "answer": "Der Brief wurde geschrieben"
+    },
+    {
+        "level": "B1",
+        "type": "short",
+        "question": "Schreibe einen Satz mit einem Relativsatz über 'der Lehrer'.",
+        "answer": "Der Lehrer, der sehr geduldig ist, hilft den Schülern"
+    },
+    {
+        "level": "B1",
+        "type": "short",
+        "question": "Bilde die indirekte Rede: Er sagt: Ich bin müde.",
+        "answer": "Er sagt, dass er müde sei"
+    },
+    {
+        "level": "B1",
+        "type": "short",
+        "question": "Schreibe das Plusquamperfekt von 'essen' mit 'ich'.",
+        "answer": "ich hatte gegessen"
+    },
+    {
+        "level": "B1",
+        "type": "short",
+        "question": "Verbinde die Sätze mit 'obwohl': Es regnet. Wir gehen spazieren.",
+        "answer": "Obwohl es regnet, gehen wir spazieren"
+    },
+    {
+        "level": "B1",
+        "type": "short",
+        "question": "Verbinde die Sätze mit 'weil': Ich bin müde. Ich habe viel gearbeitet.",
+        "answer": "Ich bin müde, weil ich viel gearbeitet habe"
+    },
+    {
+        "level": "B1",
+        "type": "short",
+        "question": "Schreibe einen Satz mit 'trotzdem'.",
+        "answer": "Es regnete, trotzdem ging er spazieren"
+    },
+    {
+        "level": "B1",
+        "type": "short",
+        "question": "Schreibe einen Satz mit 'damit'.",
+        "answer": "Ich lerne jeden Tag, damit ich die Prüfung bestehe"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle die richtige Form: Es ist möglich, dass er ___ kommt.",
+        "options": [
+            "morgen",
+            "gestern",
+            "heute Morgen schon"
+        ],
+        "answer": "morgen"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle die richtige Form: Ich habe vor, ___ nach Deutschland zu reisen.",
+        "options": [
+            "bald",
+            "schon",
+            "gestern"
+        ],
+        "answer": "bald"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle den passenden Ausdruck: ___ gesagt, ich stimme nicht zu.",
+        "options": [
+            "Ehrlich",
+            "Endlich",
+            "Eigentlich schon"
+        ],
+        "answer": "Ehrlich"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle die richtige Form: Es kommt darauf an, ___ Zeit wir haben.",
+        "options": [
+            "wie viel",
+            "wie viele",
+            "wieviel mal"
+        ],
+        "answer": "wie viel"
+    },
+    {
+        "level": "B1",
+        "type": "short",
+        "question": "Schreibe einen Satz mit 'es kommt darauf an'.",
+        "answer": "Es kommt darauf an, wie viel Zeit wir haben"
+    },
+    {
+        "level": "B1",
+        "type": "short",
+        "question": "Schreibe einen Satz im Futur II: Ich (fertig sein) bis morgen.",
+        "answer": "Ich werde bis morgen fertig sein"
+    },
+    {
+        "level": "B1",
+        "type": "short",
+        "question": "Schreibe den Komparativ und Superlativ von 'hoch'.",
+        "answer": "höher, am höchsten"
+    },
+    {
+        "level": "B1",
+        "type": "mcq",
+        "question": "Wähle die richtige Form: Ich schlage vor, dass wir morgen ___.",
+        "options": [
+            "treffen",
+            "uns treffen",
+            "getroffen"
+        ],
+        "answer": "uns treffen"
+    },
+    {
+        "level": "B1",
+        "type": "short",
+        "question": "Schreibe einen Satz mit 'es ist wichtig, dass'.",
+        "answer": "Es ist wichtig, dass wir pünktlich sind"
+    },
+    {
+        "level": "B1",
+        "type": "short",
+        "question": "Schreibe das Konjunktiv II von 'können' für 'wir'.",
+        "answer": "wir könnten"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die richtige Form: Es wäre besser, wenn er früher ___ wäre.",
+        "options": [
+            "gekommen",
+            "kommen",
+            "kam"
+        ],
+        "answer": "gekommen"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle den richtigen Konnektor: ___ er viel Erfahrung hat, bekam er die Stelle nicht.",
+        "options": [
+            "Obwohl",
+            "Weil",
+            "Damit"
+        ],
+        "answer": "Obwohl"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle den richtigen Konnektor: Die Firma expandiert. ___ werden neue Mitarbeiter gesucht.",
+        "options": [
+            "Infolgedessen",
+            "Obwohl",
+            "Trotzdem"
+        ],
+        "answer": "Infolgedessen"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die richtige Passivform im Perfekt: Das Projekt ___ abgeschlossen worden.",
+        "options": [
+            "ist",
+            "hat",
+            "war"
+        ],
+        "answer": "ist"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die richtige Form: Es wird behauptet, dass die Studie fehlerhaft ___.",
+        "options": [
+            "sei",
+            "ist",
+            "war"
+        ],
+        "answer": "sei"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle den Ausdruck: ___ lässt sich sagen, dass die Maßnahme erfolgreich war.",
+        "options": [
+            "Zusammenfassend",
+            "Obwohl",
+            "Sogar"
+        ],
+        "answer": "Zusammenfassend"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle den Ausdruck: ___ kann man argumentieren, dass beide Seiten Recht haben.",
+        "options": [
+            "Einerseits",
+            "Trotzdem",
+            "Obwohl"
+        ],
+        "answer": "Einerseits"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle den richtigen Nebensatz: Ich frage mich, ___ die Entscheidung richtig war.",
+        "options": [
+            "ob",
+            "dass",
+            "weil"
+        ],
+        "answer": "ob"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle das passende Partizip als Adjektiv: Das ___ Problem wurde gelöst.",
+        "options": [
+            "genannte",
+            "nennende",
+            "nennen"
+        ],
+        "answer": "genannte"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die richtige Konjunktiv I Form für indirekte Rede: Er behauptete, er ___ unschuldig.",
+        "options": [
+            "sei",
+            "ist",
+            "wäre"
+        ],
+        "answer": "sei"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die richtige erweiterte Partizipialkonstruktion: Der ___ Mitarbeiter wurde befördert.",
+        "options": [
+            "arbeitende",
+            "gearbeitete",
+            "arbeitend"
+        ],
+        "answer": "arbeitende"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die passende Präposition: Im Hinblick ___ die Ergebnisse müssen wir handeln.",
+        "options": [
+            "auf",
+            "für",
+            "mit"
+        ],
+        "answer": "auf"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die passende Präposition: Angesichts ___ Situation ist Vorsicht geboten.",
+        "options": [
+            "der",
+            "die",
+            "dem"
+        ],
+        "answer": "der"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle den richtigen Funktionsverbgefüge-Ausdruck: Die Regierung trifft eine ___.",
+        "options": [
+            "Entscheidung",
+            "Entscheiden",
+            "Entschieden"
+        ],
+        "answer": "Entscheidung"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die korrekte Verbform: Es ist davon auszugehen, dass die Preise ___ werden.",
+        "options": [
+            "steigen",
+            "steigt",
+            "gestiegen"
+        ],
+        "answer": "steigen"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle den richtigen Ausdruck: ___ betrachtet, war die Reform sinnvoll.",
+        "options": [
+            "Insgesamt",
+            "Trotzdem",
+            "Obwohl"
+        ],
+        "answer": "Insgesamt"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die richtige Konjunktion für Gegensatz: Die Firma wächst, ___ die Gewinne sinken.",
+        "options": [
+            "während",
+            "weil",
+            "damit"
+        ],
+        "answer": "während"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die richtige Konjunktion: ___ die Kosten steigen, bleibt die Qualität gleich.",
+        "options": [
+            "Obgleich",
+            "Damit",
+            "Weil"
+        ],
+        "answer": "Obgleich"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die korrekte indirekte Frage: Es ist unklar, ___ die Maßnahme wirksam ist.",
+        "options": [
+            "ob",
+            "dass",
+            "wie"
+        ],
+        "answer": "ob"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die richtige Nominalisierung von 'entscheiden'.",
+        "options": [
+            "die Entscheidung",
+            "der Entscheid",
+            "das Entscheiden"
+        ],
+        "answer": "die Entscheidung"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die richtige Nominalisierung von 'untersuchen'.",
+        "options": [
+            "die Untersuchung",
+            "der Untersuch",
+            "das Untersuchen"
+        ],
+        "answer": "die Untersuchung"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle den passenden Ausdruck: ___ ist zu betonen, dass die Lage ernst ist.",
+        "options": [
+            "Es",
+            "Dies",
+            "Das"
+        ],
+        "answer": "Es"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die richtige Verbform: Hätte ich das gewusst, ___ ich anders gehandelt.",
+        "options": [
+            "hätte",
+            "habe",
+            "würde"
+        ],
+        "answer": "hätte"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die passende Präposition: Im Vergleich ___ letztem Jahr sind die Zahlen gestiegen.",
+        "options": [
+            "zu",
+            "mit",
+            "auf"
+        ],
+        "answer": "zu"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle den richtigen Ausdruck: Es steht außer Frage, ___ das Projekt wichtig ist.",
+        "options": [
+            "dass",
+            "ob",
+            "weil"
+        ],
+        "answer": "dass"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die korrekte Form: Die Ergebnisse, ___ veröffentlicht wurden, sind umstritten.",
+        "options": [
+            "die",
+            "der",
+            "denen"
+        ],
+        "answer": "die"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die korrekte Form: Die Studie, ___ Ergebnisse umstritten sind, wurde kritisiert.",
+        "options": [
+            "deren",
+            "die",
+            "der"
+        ],
+        "answer": "deren"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle das passende Wort: ___ der Vorteile gibt es auch Nachteile.",
+        "options": [
+            "Trotz",
+            "Wegen",
+            "Statt"
+        ],
+        "answer": "Trotz"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle das passende Wort: ___ einer Lösung zu finden, diskutierten sie weiter.",
+        "options": [
+            "Anstatt",
+            "Statt",
+            "Ohne"
+        ],
+        "answer": "Anstatt"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die korrekte Form: ___ man die Situation betrachtet, gibt es keine einfache Lösung.",
+        "options": [
+            "Wie auch immer",
+            "Sogar wenn",
+            "Obwohl"
+        ],
+        "answer": "Wie auch immer"
+    },
+    {
+        "level": "B2",
+        "type": "short",
+        "question": "Schreibe einen Satz mit 'einerseits...andererseits'.",
+        "answer": "Einerseits ist die Arbeit anstrengend, andererseits ist sie gut bezahlt"
+    },
+    {
+        "level": "B2",
+        "type": "short",
+        "question": "Wandle in indirekte Rede um: Er sagt: Ich habe die Prüfung bestanden.",
+        "answer": "Er sagt, dass er die Prüfung bestanden habe"
+    },
+    {
+        "level": "B2",
+        "type": "short",
+        "question": "Bilde einen Satz mit 'infolgedessen'.",
+        "answer": "Es gab einen Stau, infolgedessen kam er zu spät"
+    },
+    {
+        "level": "B2",
+        "type": "short",
+        "question": "Schreibe das Passiv Perfekt von: Man hat das Problem gelöst.",
+        "answer": "Das Problem ist gelöst worden"
+    },
+    {
+        "level": "B2",
+        "type": "short",
+        "question": "Schreibe einen Satz mit einem Relativsatz im Genitiv über 'die Firma'.",
+        "answer": "Die Firma, deren Gewinn gestiegen ist, expandiert"
+    },
+    {
+        "level": "B2",
+        "type": "short",
+        "question": "Verbinde mit 'während' (Gegensatz): Er arbeitet viel. Sie arbeitet wenig.",
+        "answer": "Während er viel arbeitet, arbeitet sie wenig"
+    },
+    {
+        "level": "B2",
+        "type": "short",
+        "question": "Schreibe eine Nominalisierung von 'analysieren'.",
+        "answer": "die Analyse"
+    },
+    {
+        "level": "B2",
+        "type": "short",
+        "question": "Schreibe einen Satz im Konjunktiv II der Vergangenheit: Wenn ich Zeit gehabt hätte...",
+        "answer": "Wenn ich Zeit gehabt hätte, wäre ich gekommen"
+    },
+    {
+        "level": "B2",
+        "type": "short",
+        "question": "Bilde einen formellen Satz mit 'es ist davon auszugehen'.",
+        "answer": "Es ist davon auszugehen, dass die Lage sich verbessert"
+    },
+    {
+        "level": "B2",
+        "type": "short",
+        "question": "Schreibe einen Satz mit 'im Hinblick auf'.",
+        "answer": "Im Hinblick auf die Ergebnisse müssen Änderungen vorgenommen werden"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die richtige Form: Es bleibt abzuwarten, ___ die Reform Erfolg hat.",
+        "options": [
+            "ob",
+            "dass",
+            "weil"
+        ],
+        "answer": "ob"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die richtige Form: Ungeachtet ___ Kritik setzte die Regierung den Plan um.",
+        "options": [
+            "der",
+            "die",
+            "dem"
+        ],
+        "answer": "der"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle den passenden Konnektor: Die Kosten sind hoch; ___ lohnt sich die Investition.",
+        "options": [
+            "dennoch",
+            "deshalb",
+            "damit"
+        ],
+        "answer": "dennoch"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die richtige Form: Es sei darauf hingewiesen, dass die Frist ___ ist.",
+        "options": [
+            "abgelaufen",
+            "ablaufen",
+            "abläuft schon"
+        ],
+        "answer": "abgelaufen"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle den passenden Ausdruck: ___ betrachtet man das Ergebnis als Erfolg.",
+        "options": [
+            "Allgemein",
+            "Sogar",
+            "Trotzdem"
+        ],
+        "answer": "Allgemein"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die richtige Form: Die Behauptung erweist sich als ___.",
+        "options": [
+            "unbegründet",
+            "unbegründend",
+            "begründen"
+        ],
+        "answer": "unbegründet"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle den passenden Konnektor: Er war krank; ___ kam er zur Arbeit.",
+        "options": [
+            "trotzdem",
+            "deshalb",
+            "damit"
+        ],
+        "answer": "trotzdem"
+    },
+    {
+        "level": "B2",
+        "type": "mcq",
+        "question": "Wähle die richtige Form: Es wird davon ausgegangen, dass die Nachfrage ___ wird.",
+        "options": [
+            "steigen",
+            "steigt",
+            "gestiegen"
+        ],
+        "answer": "steigen"
+    },
+    {
+        "level": "B2",
+        "type": "short",
+        "question": "Schreibe einen Satz mit 'ungeachtet'.",
+        "answer": "Ungeachtet der Kritik setzte er seinen Plan fort"
+    },
+    {
+        "level": "B2",
+        "type": "short",
+        "question": "Schreibe einen Satz mit 'es bleibt abzuwarten'.",
+        "answer": "Es bleibt abzuwarten, ob die Reform erfolgreich sein wird"
+    }
+]
