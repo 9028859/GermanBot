@@ -687,20 +687,25 @@ async def cmd_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=main_menu_keyboard()
         )
 
-def is_bot_mentioned(update: Update, context: ContextTypes.DEFAULT_TYPE) -> bool:
+async def is_bot_mentioned(update: Update, context: ContextTypes.DEFAULT_TYPE) -> bool:
     """True if the message @mentions the bot or is a reply to one of the bot's messages."""
     msg = update.message
-    bot_username = context.bot.username or ""
+    try:
+        bot_me = await context.bot.get_me()
+        bot_username = (bot_me.username or "").lower()
+    except Exception:
+        bot_username = ""
     # Check entities for a mention of this bot
-    if msg.entities:
+    if msg.entities and msg.text:
         for ent in msg.entities:
             if ent.type == "mention":
-                mention_text = msg.text[ent.offset:ent.offset + ent.length]
-                if mention_text.lower().lstrip("@") == bot_username.lower():
+                mention_text = msg.text[ent.offset:ent.offset + ent.length].lower().lstrip("@")
+                if mention_text == bot_username:
                     return True
     # Check if replying to one of the bot's own messages
-    if msg.reply_to_message and msg.reply_to_message.from_user and msg.reply_to_message.from_user.is_bot:
-        return True
+    if msg.reply_to_message and msg.reply_to_message.from_user:
+        if msg.reply_to_message.from_user.is_bot:
+            return True
     return False
 
 # ─────────────────────────────────────────────
@@ -892,13 +897,13 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     mode = student_mode(uid_str)
 
     # ── CANCEL BUTTON ──
-    if user_message == "❌ Cancel":
+    if "Cancel" in user_message or user_message == "❌ Cancel":
         set_student_mode(uid_str, "menu")
         await update.message.reply_text("↩️ Back to main menu.", reply_markup=main_menu_keyboard())
         return
 
     # ── VOCABULARY PRACTICE ──
-    if user_message == "📖 Vocabulary Practice":
+    if "Vocabulary Practice" in user_message or user_message == "📖 Vocabulary Practice":
         database = load_database()
         if not database:
             await update.message.reply_text("No vocabulary yet. Check back soon!", reply_markup=main_menu_keyboard())
@@ -949,7 +954,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # ── Q&A (grammar exercises by level) ──
-    if user_message == "❓ Q&A":
+    if "Q&A" in user_message or user_message == "❓ Q&A":
         level = student.get("level", "A1")
         exercises = [e for e in load_exercises() if e.get("level") == level]
         if not exercises:
@@ -997,7 +1002,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # ── TODAY'S TEST ──
-    if user_message == "📝 Today's Test":
+    if "Today's Test" in user_message or user_message == "📝 Today's Test":
         daily = load_daily()
         today = date.today().isoformat()
 
@@ -1118,7 +1123,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # ── MY PROGRESS ──
-    if user_message == "📊 My Progress":
+    if "My Progress" in user_message or user_message == "📊 My Progress":
         students = load_students()
         s = students.get(uid_str, {})
         daily = load_daily()
@@ -1138,7 +1143,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # ── LEADERBOARD ──
-    if user_message == "🏆 Leaderboard":
+    if "Leaderboard" in user_message or user_message == "🏆 Leaderboard":
         students = load_students()
         ranked = sorted(
             [(s.get("name","?"), s.get("points",0)) for s in students.values() if s.get("status")=="active"],
@@ -1164,7 +1169,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"Hallo {name}! 👋 Use the menu buttons below to practice, take the test, or check your progress.",
             reply_markup=main_menu_keyboard()
         )
-    elif is_bot_mentioned(update, context):
+    elif await is_bot_mentioned(update, context):
         name = student.get("name", "")
         await update.message.reply_text(
             f"Hallo {name}! 👋 Use the menu buttons below to practice, take the test, or check your progress.",
