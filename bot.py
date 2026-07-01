@@ -213,10 +213,9 @@ def back_keyboard():
 # SCHEDULED JOBS
 # ─────────────────────────────────────────────
 async def send_daily_vocab(context: ContextTypes.DEFAULT_TYPE):
-    """6:00 AM IST — send 10 random words to all students."""
+    """6:00 AM IST — send 10 random words to the GROUP only."""
     database = load_database()
-    students = load_students()
-    if not database or not students:
+    if not database:
         return
 
     all_words = list(database.keys())
@@ -236,16 +235,14 @@ async def send_daily_vocab(context: ContextTypes.DEFAULT_TYPE):
     lines.append("\n🧪 *Test at 6:00 PM sharp! Only 5 minutes!* ⏱\nKeep studying! 💪")
     text = "\n".join(lines)
 
-    for uid, s in students.items():
-        if s.get("status") == "active":
-            try:
-                await context.bot.send_message(
-                    chat_id=int(uid),
-                    text=text,
-                    parse_mode="Markdown"
-                )
-            except Exception:
-                pass
+    try:
+        await context.bot.send_message(
+            chat_id=GROUP_ID,
+            text=text,
+            parse_mode="Markdown"
+        )
+    except Exception:
+        pass
 
 async def send_test_closed(context: ContextTypes.DEFAULT_TYPE):
     """6:05 PM IST — check attendance and send imposition to group."""
