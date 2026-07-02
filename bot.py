@@ -501,11 +501,21 @@ async def send_admin_menu(update_or_query, context):
 # CALLBACK QUERY HANDLER
 # ─────────────────────────────────────────────
 async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query   = update.callback_query
-    user_id = query.from_user.id
-    uid_str = str(user_id)
-    data    = query.data
+    query     = update.callback_query
+    user_id   = query.from_user.id
+    uid_str   = str(user_id)
+    data      = query.data
+    chat_type = update.effective_chat.type
     await query.answer()
+
+    # ── GROUP CHAT — block student buttons, reply in German ──
+    if chat_type in ("group", "supergroup"):
+        if data.startswith("qna_") or data.startswith("test_"):
+            await query.answer(
+                "⚠️ Nur im privaten Chat verfügbar!\nBitte schreibe dem Bot direkt. 📩",
+                show_alert=True
+            )
+            return
 
     # ── STUDENT TEST MCQ ANSWER ──
     if data.startswith("test_"):
