@@ -12,7 +12,15 @@ from telegram.ext import (
     CallbackQueryHandler,
     filters,
     ContextTypes,
+    JobQueue,
 )
+
+
+def esc(text: str) -> str:
+    """Escape special Markdown V2 characters in dynamic content."""
+    if not text:
+        return ""
+    return str(text).replace("\\", "\\\\").replace("*", "\\*").replace("_", "\\_").replace("`", "\\`").replace("[", "\\[")
 
 # ─────────────────────────────────────────────
 # CONFIG
@@ -280,10 +288,10 @@ async def send_test_to_students(context: ContextTypes.DEFAULT_TYPE):
             name = s.get("name", "Student")
             await context.bot.send_message(
                 chat_id=int(uid),
-                text=f"📝 *Hallo {name}! Your test starts NOW!*\n\n"
+                text=f"📝 *Hallo {esc(name)}! Your test starts NOW!*\n\n"
                      f"10 questions • 30 seconds each • Total 5 minutes\n\n"
                      f"*Question 1/10:*\n\n"
-                     f"🇩🇪 What is the meaning of: *{questions[0]['word'].capitalize()}*?",
+                     f"🇩🇪 What is the meaning of: *{esc(questions[0]['word'].capitalize())}*?",
                 parse_mode="Markdown",
                 reply_markup=InlineKeyboardMarkup([
                     [InlineKeyboardButton(opt, callback_data=f"test_{uid}_0_{opt}")]
@@ -446,7 +454,7 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if uid_str in students and students[uid_str].get("status") == "active":
         name = students[uid_str].get("name", "")
         await update.message.reply_text(
-            f"Willkommen zurück, *{name}*! 👋\n\nWas möchtest du tun?",
+            f"Willkommen zurück, *{esc(name)}*! 👋\n\nWas möchtest du tun?",
             parse_mode="Markdown",
             reply_markup=main_menu_keyboard()
         )
@@ -508,14 +516,15 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_type = update.effective_chat.type
     await query.answer()
 
-    # ── GROUP CHAT — block student buttons, reply in German ──
+    # ── GROUP CHAT — send private chat notice when buttons tapped ──
     if chat_type in ("group", "supergroup"):
-        if data.startswith("qna_") or data.startswith("test_"):
-            await query.answer(
-                "⚠️ Nur im privaten Chat verfügbar!\nBitte schreibe dem Bot direkt. 📩",
-                show_alert=True
-            )
-            return
+        await query.message.reply_text(
+            "🔒 Diese Funktion ist nur im privaten Chat verfügbar.\n"
+            "Bitte öffne den privaten Chat mit dem Bot! 📩\n\n"
+            "_(This is only available in private chat. Please message the bot directly!)_",
+            parse_mode="Markdown"
+        )
+        return
 
     # ── STUDENT TEST MCQ ANSWER ──
     if data.startswith("test_"):
@@ -540,7 +549,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             test["score"] += 1
             fb = "✅ *Richtig!*"
         else:
-            fb = f"❌ *Falsch!*\nCorrect: *{q['correct']}*"
+            fb = f"❌ *Falsch!*\nCorrect: *{esc(q['correct'])}*"
 
         next_index = t_index + 1
         test["index"] = next_index
@@ -570,7 +579,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             active_tests[t_uid] = test
             await query.edit_message_text(
                 f"{fb}\n\n*Question {next_index+1}/10:*\n\n"
-                f"🇩🇪 What is the meaning of: *{nq['word'].capitalize()}*?",
+                f"🇩🇪 What is the meaning of: *{esc(nq['word'].capitalize())}*?",
                 parse_mode="Markdown",
                 reply_markup=InlineKeyboardMarkup([
                     [InlineKeyboardButton(opt, callback_data=f"test_{t_uid}_{next_index}_{opt}")]
@@ -644,7 +653,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         frozen   = is_frozen(int(uid))
         status   = f"❄️ Frozen till {frozen}" if frozen else "✅ Active"
         text = (
-            f"👤 *Name:* {s.get('name','?')}\n"
+            f"👤 *Name:* {esc(s.get('name','?'))}\n"
             f"🆔 *ID:* `{uid}`\n"
             f"📖 *Level:* {s.get('level','?')}\n"
             f"⭐ *Points:* {s.get('points',0)}\n"
@@ -883,24 +892,10 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     username     = update.effective_user.username or ""
     chat_type    = update.effective_chat.type
 
-    # ── GROUP CHAT HANDLING ──
+    # ── GROUP CHAT — COMPLETE SILENCE ──
+    # Bot never replies to any message in the group
+    # Only scheduled jobs send to group (vocab, results, winner)
     if chat_type in ("group", "supergroup"):
-        mentioned = await is_bot_mentioned(update, context)
-        if mentioned:
-            msg_lower = user_message.lower()
-            if any(kw in msg_lower for kw in PRIVATE_ONLY_KEYWORDS):
-                await update.message.reply_text(
-                    "🤖 Diese Funktion ist nur im privaten Chat verfügbar.\n"
-                    "_(This feature is only available in private chat.)_\n\n"
-                    "Bitte schreibe mir direkt! 📩",
-                    parse_mode="Markdown"
-                )
-            else:
-                await update.message.reply_text(
-                    "Hallo! 👋 Schreib mir privat für Übungen und Tests.\n"
-                    "_(Hi! Message me privately for exercises and tests.)_",
-                    parse_mode="Markdown"
-                )
         return
 
     # ── ADMIN FLOW ──
@@ -960,7 +955,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
             database[word] = meaning
             save_json(DB_FILE, database)
             set_admin_state(user_id, "logged_in")
-            await update.message.reply_text(f"✅ Added!\n\n*{word}* = {meaning}", parse_mode="Markdown", reply_markup=admin_menu_keyboard())
+            await update.message.reply_text(f"✅ Added!\n\n*{esc(word)}* = {esc(meaning)}", parse_mode="Markdown", reply_markup=admin_menu_keyboard())
         else:
             await update.message.reply_text("⚠️ Format: `word = meaning`", parse_mode="Markdown")
         return
@@ -1116,7 +1111,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         student["status"]   = "active"
         save_students(students)
         await update.message.reply_text(
-            f"Willkommen, *{user_message}*! 🎉\n\nLevel: *{student['level']}*\n\nHere is your menu 👇",
+            f"Willkommen, *{esc(user_message)}*! 🎉\n\nLevel: *{esc(student['level'])}*\n\nHere is your menu 👇",
             parse_mode="Markdown", reply_markup=main_menu_keyboard()
         )
         return
@@ -1139,7 +1134,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         word, meaning = random.choice(list(database.items()))
         set_student_mode(uid_str, "vocab_quiz", {"word": word, "meaning": meaning})
         await update.message.reply_text(
-            f"📖 *Vocabulary Practice*\n\nWhat is the meaning of:\n\n🇩🇪 *{word.capitalize()}*\n\nType your answer!\n\n_(Tap ❌ Cancel to stop)_",
+            f"📖 *Vocabulary Practice*\n\nWhat is the meaning of:\n\n🇩🇪 *{esc(word.capitalize())}*\n\nType your answer!\n\n_(Tap ❌ Cancel to stop)_",
             parse_mode="Markdown", reply_markup=cancel_keyboard()
         )
         return
@@ -1157,14 +1152,14 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
             new_word, new_meaning = random.choice(list(database.items()))
             set_student_mode(uid_str, "vocab_quiz", {"word": new_word, "meaning": new_meaning})
             await update.message.reply_text(
-                f"✅ *Richtig!* +5 points 🌟\n\nNext:\n\n🇩🇪 *{new_word.capitalize()}*\n\nType the meaning!",
+                f"✅ *Richtig!* +5 points 🌟\n\nNext:\n\n🇩🇪 *{esc(new_word.capitalize())}*\n\nType the meaning!",
                 parse_mode="Markdown", reply_markup=cancel_keyboard()
             )
         else:
             new_word, new_meaning = random.choice(list(database.items()))
             set_student_mode(uid_str, "vocab_quiz", {"word": new_word, "meaning": new_meaning})
             await update.message.reply_text(
-                f"❌ *Falsch!*\nCorrect: *{data.get('meaning')}*\n\nNext:\n\n🇩🇪 *{new_word.capitalize()}*\n\nType the meaning!",
+                f"❌ *Falsch!*\nCorrect: *{esc(data.get('meaning',''))}*\n\nNext:\n\n🇩🇪 *{esc(new_word.capitalize())}*\n\nType the meaning!",
                 parse_mode="Markdown", reply_markup=cancel_keyboard()
             )
         return
@@ -1206,7 +1201,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 save_students(students)
                 fb = "✅ *Richtig!* +5 points 🌟"
             else:
-                fb = f"❌ *Falsch!*\n\nCorrect: *{q.get('answer')}*"
+                fb = f"❌ *Falsch!*\n\nCorrect: *{esc(q.get('answer',''))}*"
             set_student_mode(uid_str, "menu")
             await update.message.reply_text(f"{fb}\n\nTap ❓ Q&A again!", parse_mode="Markdown", reply_markup=main_menu_keyboard())
         return
@@ -1241,7 +1236,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         attended = "✅ Yes" if uid_str in daily.get("attendance", []) else "❌ No"
         await update.message.reply_text(
             f"📊 *My Progress*\n\n"
-            f"👤 *Name:* {s.get('name','?')}\n"
+            f"👤 *Name:* {esc(s.get('name','?'))}\n"
             f"📖 *Level:* {s.get('level','?')}\n"
             f"⭐ *Total Points:* {s.get('points',0)}\n"
             f"🏅 *Weekly Points:* {s.get('weekly_points',0)}\n"
@@ -1299,6 +1294,8 @@ def main():
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, reply))
 
     print("Bot started...")
+    print(f"Job queue: {app.job_queue}")
+    print(f"Jobs scheduled: {len(app.job_queue.jobs())}")
     app.run_polling()
 
 if __name__ == "__main__":
