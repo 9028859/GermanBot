@@ -446,6 +446,14 @@ PRIVATE_ONLY_KEYWORDS = ["q&a", "vocab", "practice", "leaderboard", "progress", 
 # /start COMMAND
 # ─────────────────────────────────────────────
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # In group — only reply to /start with private chat notice
+    if update.effective_chat.type in ("group", "supergroup"):
+        await update.message.reply_text(
+            "🔒 Bitte schreibe mir privat!\n"
+            "_(Please open a private chat with me to get started.)_ 📩",
+            parse_mode="Markdown"
+        )
+        return
     user_id  = update.effective_user.id
     uid_str  = str(user_id)
     username = update.effective_user.username or ""
@@ -516,14 +524,8 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_type = update.effective_chat.type
     await query.answer()
 
-    # ── GROUP CHAT — send private chat notice when buttons tapped ──
+    # ── GROUP CHAT — complete silence for all button taps ──
     if chat_type in ("group", "supergroup"):
-        await query.message.reply_text(
-            "🔒 Diese Funktion ist nur im privaten Chat verfügbar.\n"
-            "Bitte öffne den privaten Chat mit dem Bot! 📩\n\n"
-            "_(This is only available in private chat. Please message the bot directly!)_",
-            parse_mode="Markdown"
-        )
         return
 
     # ── STUDENT TEST MCQ ANSWER ──
@@ -873,6 +875,8 @@ async def pdf_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # /cancel COMMAND
 # ─────────────────────────────────────────────
 async def cmd_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_chat.type in ("group", "supergroup"):
+        return
     user_id = update.effective_user.id
     uid_str = str(user_id)
     if is_admin_logged_in(user_id) or admin_state(user_id):
@@ -1291,7 +1295,7 @@ def main():
     app.add_handler(CommandHandler("cancel",        cmd_cancel))
     app.add_handler(CallbackQueryHandler(callback_handler))
     app.add_handler(MessageHandler(filters.Document.PDF, pdf_handler))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, reply))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & filters.ChatType.PRIVATE, reply))
 
     print("Bot started...")
     print(f"Job queue: {app.job_queue}")
