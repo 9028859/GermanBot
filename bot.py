@@ -1063,15 +1063,18 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("⚠️ Invalid format. Send days (e.g. `3`) or `2026-07-10 18:00`")
         return
 
-    # ── WHITELIST CHECK FOR PRIVATE CHAT ──
-    if str(user_id) != str(ADMIN_ID) and not is_allowed(user_id, username):
-        await update.message.reply_text(
-            "⛔ Bot usage restricted.\n\nPlease contact *+91 7012098913* to get access.",
-            parse_mode="Markdown"
-        )
-        return
+    # ── STUDENT REGISTRATION ──
+    students = load_students()
 
+    # ── WHITELIST CHECK — skip if already a registered active student ──
     if str(user_id) != str(ADMIN_ID):
+        already_registered = uid_str in students and students[uid_str].get("status") == "active"
+        if not already_registered and not is_allowed(user_id, username):
+            await update.message.reply_text(
+                "⛔ Bot usage restricted.\n\nPlease contact *+91 7012098913* to get access.",
+                parse_mode="Markdown"
+            )
+            return
         frozen = is_frozen(user_id)
         if frozen:
             await update.message.reply_text(
@@ -1079,9 +1082,6 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 parse_mode="Markdown"
             )
             return
-
-    # ── STUDENT REGISTRATION ──
-    students = load_students()
 
     if uid_str not in students:
         students[uid_str] = {
