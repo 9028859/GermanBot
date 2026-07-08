@@ -75,16 +75,20 @@ def save_settings(d):   save_json(SETTINGS_FILE, d)
 # ─────────────────────────────────────────────
 def is_allowed(user_id: int, username: str) -> bool:
     whitelist = load_whitelist()
-    allowed_ids = [str(i) for i in whitelist.get("ids", [])]
-    allowed_usernames = [u.lower().lstrip("@") for u in whitelist.get("usernames", [])]
-    if str(user_id) in allowed_ids:
+    # Convert all IDs to string for safe comparison
+    allowed_ids = [str(i).strip() for i in whitelist.get("ids", [])]
+    allowed_usernames = [u.lower().strip().lstrip("@") for u in whitelist.get("usernames", [])]
+    uid_str = str(user_id).strip()
+    # Check by ID
+    if uid_str in allowed_ids:
         # Check if frozen
-        frozen_until = whitelist.get("frozen", {}).get(str(user_id))
+        frozen_until = whitelist.get("frozen", {}).get(uid_str)
         if frozen_until:
             if datetime.now(IST) < datetime.fromisoformat(frozen_until):
                 return False
         return True
-    if username and username.lower().lstrip("@") in allowed_usernames:
+    # Check by username
+    if username and username.lower().strip().lstrip("@") in allowed_usernames:
         return True
     return False
 
@@ -321,35 +325,26 @@ async def send_test_to_students(context: ContextTypes.DEFAULT_TYPE):
     context.job_queue.run_once(close_test, when=310, name="close_test")
 
 async def close_test(context: ContextTypes.DEFAULT_TYPE):
-    """Called 5 minutes after test starts — close all active tests and post results."""
+    """Called 5 minutes after test starts — always post attendance to group."""
     students = load_students()
     daily    = load_daily()
-    results  = []
+    whitelist = load_whitelist()
+    allowed_ids = [str(i) for i in whitelist.get("ids", [])]
 
+    # Close any still-active tests and record scores
     for uid, test in list(active_tests.items()):
         score = test.get("score", 0)
         total = len(test.get("questions", []))
-        s     = students.get(uid, {})
-        name  = s.get("name", "Student")
-        # Add points
         add_points(uid, score * 10)
         students = load_students()
-        students[uid]["exercises_completed"] = students[uid].get("exercises_completed", 0) + 1
-        save_students(students)
-        # Mark attendance
+        if uid in students:
+            students[uid]["exercises_completed"] = students[uid].get("exercises_completed", 0) + 1
+            save_students(students)
         if uid not in daily.get("attendance", []):
             daily["attendance"].append(uid)
         daily.setdefault("test_results", {})[uid] = score
-        results.append((name, score, total))
-        # Notify student privately
         try:
-            msg = f"⏱ *Time's up!*\n\nYour score: *{score}/{total}*\nPoints earned: *+{score * 10}* ⭐"
-            if score == total:
-                msg += "\n\n🌟 *Ausgezeichnet! Perfect score!*"
-            elif score >= total // 2:
-                msg += "\n\n👍 *Gut gemacht! Good job!*"
-            else:
-                msg += "\n\n📚 *Weiter üben! Keep practicing!*"
+            msg = f"⏱ *Zeit ist um! Time\'s up!*\n\nYour score: *{score}/{total}*\nPoints: *+{score * 10}* ⭐"
             await context.bot.send_message(chat_id=int(uid), text=msg, parse_mode="Markdown")
         except Exception:
             pass
@@ -357,18 +352,34 @@ async def close_test(context: ContextTypes.DEFAULT_TYPE):
     save_daily(daily)
     active_tests.clear()
 
-    # Post results in group
-    whitelist = load_whitelist()
-    allowed_ids = [str(i) for i in whitelist.get("ids", [])]
-    attended = daily.get("attendance", [])
-    absent   = [students.get(uid, {}) for uid in allowed_ids if uid not in attended and students.get(uid, {}).get("status") == "active"]
+    # Reload updated data
+    students  = load_students()
+    attended  = daily.get("attendance", [])
+    results   = daily.get("test_results", {})
 
-    lines = ["📊 *Today's Test Results*\n"]
-    results.sort(key=lambda x: x[1], reverse=True)
-    medals = ["🥇", "🥈", "🥉"]
-    for i, (name, score, total) in enumerate(results):
-        medal = medals[i] if i < 3 else "▪️"
-        lines.append(f"{medal} *{name}* — {score}/{total} (+{score*10} pts)")
+    # Build results message — always post even if nobody attended
+    lines = ["📊 *Test Attendance Report*\n"]
+    
+    # Who attended
+    if attended:
+        lines.append("✅ *Attended:*")
+        sorted_results = sorted(results.items(), key=lambda x: x[1], reverse=True)
+        medals = ["🥇","🥈","🥉"]
+        for i, (uid, score) in enumerate(sorted_results):
+            s     = students.get(str(uid), {})
+            name  = s.get("name", "Student")
+            total = 10
+            medal = medals[i] if i < 3 else "▪️"
+            lines.append(f"{medal} *{name}* — {score}/{total} (+{score*10} pts)")
+    else:
+        lines.append("❌ *No students attended today\'s test!*")
+
+    # Who missed
+    absent = []
+    for uid in allowed_ids:
+        s = students.get(str(uid), {})
+        if s.get("status") == "active" and str(uid) not in [str(a) for a in attended]:
+            absent.append(s)
 
     if absent:
         lines.append("\n❌ *Missed the test:*")
@@ -377,12 +388,21 @@ async def close_test(context: ContextTypes.DEFAULT_TYPE):
             name     = s.get("name", "Student")
             lines.append(f"@{username}" if username else f"*{name}*")
         word_list = "\n".join([f"• *{w}* — {m}" for w, m in daily.get("words", {}).items()])
-        lines.append(f"\n🖊 *Du hast den Test verpasst!*\nWrite all today's words *10 times* and submit before *10:00 PM!*\n\n📖 *Words:*\n{word_list}")
+        lines.append(
+            f"\n🖊 *Du hast den Test verpasst!*\n"
+            f"Write all today\'s words *10 times* and submit before *10:00 PM!*\n\n"
+            f"📖 *Today\'s Words:*\n{word_list}"
+        )
 
     try:
-        await context.bot.send_message(chat_id=GROUP_ID, text="\n".join(lines), parse_mode="Markdown")
-    except Exception:
-        pass
+        await context.bot.send_message(
+            chat_id=GROUP_ID,
+            text="\n".join(lines),
+            parse_mode="Markdown"
+        )
+    except Exception as e:
+        print(f"Error posting results to group: {e}")
+
 
 async def send_weekly_winner(context: ContextTypes.DEFAULT_TYPE):
     """Friday 6:00 PM IST — announce top scorer and reset weekly points."""
@@ -498,7 +518,7 @@ async def cmd_administrator(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     user_id = update.effective_user.id
     if str(user_id) != str(ADMIN_ID):
-        await update.message.reply_text("⛔ You are not authorised.")
+        await update.message.reply_text("⛔ You are not authorised.\n\nPlease contact *+91 7012098913*.", parse_mode="Markdown")
         return
     set_admin_state(user_id, "waiting_password")
     await update.message.reply_text(
@@ -1066,15 +1086,17 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ── STUDENT REGISTRATION ──
     students = load_students()
 
-    # ── WHITELIST CHECK — skip if already a registered active student ──
+    # ── WHITELIST CHECK — always allow already registered active students ──
     if str(user_id) != str(ADMIN_ID):
         already_registered = uid_str in students and students[uid_str].get("status") == "active"
-        if not already_registered and not is_allowed(user_id, username):
-            await update.message.reply_text(
-                "⛔ Bot usage restricted.\n\nPlease contact *+91 7012098913* to get access.",
-                parse_mode="Markdown"
-            )
-            return
+        if not already_registered:
+            # New user — check whitelist
+            if not is_allowed(user_id, username):
+                await update.message.reply_text(
+                    "⛔ Bot usage restricted.\n\nPlease contact *+91 7012098913* to get access.",
+                    parse_mode="Markdown"
+                )
+                return
         frozen = is_frozen(user_id)
         if frozen:
             await update.message.reply_text(
