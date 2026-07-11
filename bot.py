@@ -1097,8 +1097,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if not trial:
                 trial_sessions[uid_str] = {"name": "", "actions": 0, "asking_name": True}
                 await update.message.reply_text(
-                    "Hallo! 👋 Welcome to *Deutsch Lernen!*\n\n"
-                    "You have *3 free actions* to try the bot!\n\n"
+                    "Hallo! 👋 Ich bin der Deutsche Lern-Bot der *Deutsch Lernen Company!*\n\n"
                     "Wie heißt du? *What is your name?*",
                     parse_mode="Markdown",
                     reply_markup=ReplyKeyboardRemove()
@@ -1112,34 +1111,43 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 trial_sessions[uid_str] = trial
                 await update.message.reply_text(
                     f"Willkommen, *{esc(user_message)}*! 🎉\n\n"
-                    f"You have *3 free actions*. Let\'s start!",
+                    f"You have *3 free tries!*\n\n"
+                    f"📖 Vocabulary Practice and ❓ Q&A are available for you to try!",
                     parse_mode="Markdown",
-                    reply_markup=main_menu_keyboard()
+                    reply_markup=ReplyKeyboardMarkup([
+                        ["📖 Vocabulary Practice", "❓ Q&A"],
+                    ], resize_keyboard=True)
                 )
                 return
 
-            # Step 3: Check if trial exhausted
-            if trial.get("actions", 0) >= 3:
+            # Step 3: Block restricted buttons for trial users
+            if any(kw in user_message for kw in ["Today's Test", "Leaderboard", "My Progress", "📝", "🏆", "📊"]):
                 await update.message.reply_text(
-                    f"Hallo *{esc(trial.get('name', ''))}*! 👋\n\n"
-                    f"You have used all *3 free actions!* 🎓\n\n"
-                    f"To continue learning German, please contact your tutor:\n"
-                    f"📞 *+91 7012098913*\n\n"
-                    f"Mention your name and we will activate your account!",
+                    f"⛔ This feature is only available for enrolled students.\n\n"
+                    f"Please contact *+91 7012098913* to join!",
                     parse_mode="Markdown"
                 )
                 return
 
-            # Step 4: Allow action and increment counter
+            # Step 4: Check if trial exhausted
+            if trial.get("actions", 0) >= 3:
+                await update.message.reply_text(
+                    f"Hallo *{esc(trial.get('name', ''))}*! 👋\n\n"
+                    f"You have used all *3 free tries!* 🎓\n\n"
+                    f"To continue learning German with us, please contact your tutor:\n"
+                    f"📞 *+91 7012098913*\n\n"
+                    f"Mention your name and we will activate your account! 😊",
+                    parse_mode="Markdown",
+                    reply_markup=ReplyKeyboardRemove()
+                )
+                return
+
+            # Step 5: Allow action and increment counter
             trial["actions"] = trial.get("actions", 0) + 1
             trial_sessions[uid_str] = trial
             remaining = 3 - trial["actions"]
-            if remaining > 0:
-                await update.message.reply_text(
-                    f"_{remaining} free action(s) remaining_",
-                    parse_mode="Markdown",
-                    reply_markup=main_menu_keyboard()
-                )
+            if remaining == 0:
+                pass  # Will show exhausted message next time
             # Continue to handle the actual message below
         frozen = is_frozen(user_id)
         if frozen:
