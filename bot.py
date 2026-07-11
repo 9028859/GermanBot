@@ -1090,6 +1090,174 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if str(user_id) != str(ADMIN_ID):
         already_registered = uid_str in students and students[uid_str].get("status") == "active"
         if not already_registered and not is_allowed(user_id, username):
+
+            trial = trial_sessions.get(uid_str, {})
+
+            # First ever message — ask name
+            if not trial:
+                trial_sessions[uid_str] = {"name": "", "actions": 0, "asking_name": True}
+                await update.message.reply_text(
+                    "Hallo! 👋 Ich bin der Deutsche Lern-Bot der *Deutsch Lernen Company!*\n\n"
+                    "Wie heißt du? *What is your name?*",
+                    parse_mode="Markdown",
+                    reply_markup=ReplyKeyboardRemove()
+                )
+                return
+
+            # Waiting for name
+            if trial.get("asking_name"):
+                trial["name"] = user_message
+                trial["asking_name"] = False
+                trial_sessions[uid_str] = trial
+                await update.message.reply_text(
+                    f"Willkommen, *{esc(user_message)}*! 🎉\n\n"
+                    f"You have *3 free tries!*\n\n"
+                    f"Try our Vocabulary Practice and Q&A! 👇",
+                    parse_mode="Markdown",
+                    reply_markup=ReplyKeyboardMarkup([
+                        ["📖 Vocabulary Practice", "❓ Q&A"],
+                    ], resize_keyboard=True)
+                )
+                return
+
+            # Block restricted buttons
+            if any(kw in user_message for kw in ["Today", "Leaderboard", "Progress", "📝", "🏆", "📊"]):
+                await update.message.reply_text(
+                    "⛔ This feature is only for enrolled students.\n\n"
+                    "Please contact *+91 7012098913* to join!",
+                    parse_mode="Markdown"
+                )
+                return
+
+            # Trial exhausted
+            if trial.get("actions", 0) >= 3:
+                await update.message.reply_text(
+                    f"Hallo *{esc(trial.get('name', ''))}*! 👋\n\n"
+                    f"You have used all *3 free tries!* 🎓\n\n"
+                    f"To continue learning German, contact your tutor:\n"
+                    f"📞 *+91 7012098913*\n\n"
+                    f"Mention your name and we will activate your account! 😊",
+                    parse_mode="Markdown",
+                    reply_markup=ReplyKeyboardRemove()
+                )
+                return
+
+            # Increment trial action counter
+            trial["actions"] = trial.get("actions", 0) + 1
+            trial_sessions[uid_str] = trial
+
+            # Create temporary student object for vocab/qna handlers
+            student = {
+                "name": trial.get("name", ""),
+                "level": "A1",
+                "status": "active",
+                "points": 0,
+                "weekly_points": 0,
+                "streak": 0,
+                "exercises_completed": 0
+            }
+            # Skip registration and go directly to active student handling
+            mode = student_mode(uid_str)
+            touch_student(uid_str) if uid_str in students else None
+
+            if "Vocabulary Practice" in user_message:
+                database = load_database()
+                if not database:
+                    await update.message.reply_text("No vocabulary yet!", reply_markup=ReplyKeyboardMarkup([["📖 Vocabulary Practice", "❓ Q&A"]], resize_keyboard=True))
+                    return
+                word, meaning = random.choice(list(database.items()))
+                set_student_mode(uid_str, "vocab_quiz", {"word": word, "meaning": meaning})
+                await update.message.reply_text(
+                    f"📖 *Vocabulary Practice*\n\nWhat is the meaning of:\n\n🇩🇪 *{esc(word.capitalize())}*\n\nType your answer!",
+                    parse_mode="Markdown",
+                    reply_markup=cancel_keyboard()
+                )
+                return
+
+            if mode == "vocab_quiz":
+                data    = student_data(uid_str)
+                meaning = data.get("meaning", "").lower()
+                answer  = user_message.lower().strip()
+                database = load_database()
+                if answer in meaning or meaning in answer:
+                    new_word, new_meaning = random.choice(list(database.items()))
+                    set_student_mode(uid_str, "vocab_quiz", {"word": new_word, "meaning": new_meaning})
+                    await update.message.reply_text(
+                        f"✅ *Richtig!* 🌟\n\nNext:\n\n🇩🇪 *{esc(new_word.capitalize())}*\n\nType the meaning!",
+                        parse_mode="Markdown",
+                        reply_markup=cancel_keyboard()
+                    )
+                else:
+                    new_word, new_meaning = random.choice(list(database.items()))
+                    set_student_mode(uid_str, "vocab_quiz", {"word": new_word, "meaning": new_meaning})
+                    await update.message.reply_text(
+                        f"❌ *Falsch!*\nCorrect: *{esc(data.get('meaning',''))}*\n\nNext:\n\n🇩🇪 *{esc(new_word.capitalize())}*",
+                        parse_mode="Markdown",
+                        reply_markup=cancel_keyboard()
+                    )
+                return
+
+            if "Q&A" in user_message:
+                exercises = [e for e in load_exercises() if e.get("level") == "A1"]
+                if not exercises:
+                    await update.message.reply_text("No questions yet!", reply_markup=ReplyKeyboardMarkup([["📖 Vocabulary Practice", "❓ Q&A"]], resize_keyboard=True))
+                    return
+                q = random.choice(exercises)
+                set_student_mode(uid_str, "qna", {"question": q})
+                if q.get("type") == "mcq":
+                    opts = q.get("options", [])
+                    await update.message.reply_text(
+                        f"❓ *Q&A*\n\n{q['question']}",
+                        parse_mode="Markdown",
+                        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(opt, callback_data=f"qna_{opt}")] for opt in opts])
+                    )
+                else:
+                    await update.message.reply_text(
+                        f"❓ *Q&A*\n\n{q['question']}\n\n_Type your answer!_",
+                        parse_mode="Markdown",
+                        reply_markup=cancel_keyboard()
+                    )
+                return
+
+            if mode == "qna":
+                data = student_data(uid_str)
+                q    = data.get("question", {})
+                if q.get("type") == "short":
+                    correct    = q.get("answer", "").lower()
+                    answer     = user_message.lower().strip()
+                    is_correct = answer in correct or correct in answer
+                    fb = "✅ *Richtig!* 🌟" if is_correct else f"❌ *Falsch!*\n\nCorrect: *{esc(q.get('answer',''))}*"
+                    set_student_mode(uid_str, "menu")
+                    await update.message.reply_text(
+                        f"{fb}\n\nTap ❓ Q&A again!",
+                        parse_mode="Markdown",
+                        reply_markup=ReplyKeyboardMarkup([["📖 Vocabulary Practice", "❓ Q&A"]], resize_keyboard=True)
+                    )
+                return
+
+            if "Cancel" in user_message:
+                set_student_mode(uid_str, "menu")
+                await update.message.reply_text(
+                    "↩️ Back to menu.",
+                    reply_markup=ReplyKeyboardMarkup([["📖 Vocabulary Practice", "❓ Q&A"]], resize_keyboard=True)
+                )
+                return
+
+            # Any other message — show trial menu
+            await update.message.reply_text(
+                f"You have *{3 - trial.get('actions', 0)}* free tries remaining! 👇",
+                parse_mode="Markdown",
+                reply_markup=ReplyKeyboardMarkup([["📖 Vocabulary Practice", "❓ Q&A"]], resize_keyboard=True)
+            )
+            return
+
+        # ── STUDENT REGISTRATION ──
+    students = load_students()
+
+    # ── WHITELIST & TRIAL CHECK ──
+    if str(user_id) != str(ADMIN_ID):
+        already_registered = uid_str in students and students[uid_str].get("status") == "active"
+        if not already_registered and not is_allowed(user_id, username):
             # Not whitelisted — handle trial
             trial = trial_sessions.get(uid_str)
 
@@ -1173,9 +1341,25 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    student = students[uid_str]
+    # For trial users, create a temporary student object so handlers work
+    if trial_sessions.get(uid_str) and str(user_id) != str(ADMIN_ID) and not is_allowed(user_id, username):
+        trial = trial_sessions[uid_str]
+        student = {
+            "name": trial.get("name", ""),
+            "level": "A1",
+            "status": "active",
+            "points": 0,
+            "weekly_points": 0,
+            "streak": 0,
+            "exercises_completed": 0
+        }
+        # Skip to active student handling directly
+    elif uid_str in students:
+        student = students[uid_str]
+    else:
+        student = {}
 
-    if student["status"] == "waiting_for_level":
+    if student.get("status") == "waiting_for_level":
         if user_message in ["A1", "A2", "B1", "B2"]:
             student["level"]  = user_message
             student["status"] = "waiting_for_name"
@@ -1185,7 +1369,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("Please choose your level:", reply_markup=level_keyboard())
         return
 
-    if student["status"] == "waiting_for_name":
+    if student.get("status") == "waiting_for_name":
         student["name"]     = user_message
         student["username"] = username
         student["status"]   = "active"
