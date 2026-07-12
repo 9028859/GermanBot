@@ -17,10 +17,15 @@ from telegram.ext import (
 
 
 def esc(text: str) -> str:
-    """Escape special Markdown V2 characters in dynamic content."""
+    """Safely escape text for Telegram Markdown."""
     if not text:
         return ""
-    return str(text).replace("\\", "\\\\").replace("*", "\\*").replace("_", "\\_").replace("`", "\\`").replace("[", "\\[")
+    text = str(text)
+    text = text.replace('*', '')
+    text = text.replace('_', '')
+    text = text.replace('`', '')
+    text = text.replace('[', '')
+    return text
 
 # ─────────────────────────────────────────────
 # CONFIG
@@ -266,13 +271,14 @@ async def send_test_to_students(context: ContextTypes.DEFAULT_TYPE):
     words     = daily.get("words", {})
     word_items = list(words.items())
 
-    # Build 10 MCQ questions from today's words
+    # Build MCQ questions from today's words
     questions = []
+    db = load_database()
     for word, meaning in word_items:
-        # Get 3 wrong options from database
-        db = load_database()
         wrong_pool = [v for k, v in db.items() if k != word]
-        wrong = random.sample(wrong_pool, min(3, len(wrong_pool)))
+        if len(wrong_pool) < 3:
+            continue
+        wrong = random.sample(wrong_pool, 3)
         options = wrong + [meaning]
         random.shuffle(options)
         questions.append({
@@ -280,6 +286,8 @@ async def send_test_to_students(context: ContextTypes.DEFAULT_TYPE):
             "correct": meaning,
             "options": options
         })
+    if not questions:
+        return
 
     # Send test to each allowed student
     for uid in allowed_ids:
@@ -1251,9 +1259,6 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
 
-        # ── STUDENT REGISTRATION ──
-    students = load_students()
-
     # ── FROZEN CHECK FOR WHITELISTED STUDENTS ──
     if str(user_id) != str(ADMIN_ID):
         frozen = is_frozen(user_id)
@@ -1280,20 +1285,8 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    # For trial users, create a temporary student object so handlers work
-    if trial_sessions.get(uid_str) and str(user_id) != str(ADMIN_ID) and not is_allowed(user_id, username):
-        trial = trial_sessions[uid_str]
-        student = {
-            "name": trial.get("name", ""),
-            "level": "A1",
-            "status": "active",
-            "points": 0,
-            "weekly_points": 0,
-            "streak": 0,
-            "exercises_completed": 0
-        }
-        # Skip to active student handling directly
-    elif uid_str in students:
+    # Load student object
+    if uid_str in students:
         student = students[uid_str]
     else:
         student = {}
@@ -1487,7 +1480,7 @@ def main():
     # 6:00 PM IST — send MCQ test privately to all students
     jq.run_daily(send_test_to_students, time=dt.time(18, 0, 0, tzinfo=ist))
     # Friday 6:00 PM IST — weekly winner announcement
-    jq.run_daily(send_weekly_winner,  time=dt.time(18, 0, 0, tzinfo=ist), days=(5,))  # 5 = Friday
+    jq.run_daily(send_weekly_winner,  time=dt.time(18, 10, 0, tzinfo=ist), days=(5,))  # 5 = Friday, 10 mins after test
 
     # Handlers — group blocking is done inside each function
     app.add_handler(CommandHandler("start",         cmd_start))
