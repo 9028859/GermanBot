@@ -636,8 +636,32 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             fb = "✅ *Richtig!* +5 points 🌟"
         else:
             fb = f"❌ *Falsch!*\n\nCorrect answer: *{correct}*"
-        set_student_mode(uid_str, "menu")
-        await query.edit_message_text(f"{fb}\n\nTap ❓ Q&A again for another question!", parse_mode="Markdown")
+
+        # Auto send next MCQ question
+        students = load_students()
+        s = students.get(uid_str, {})
+        level = s.get("level", "A1")
+        exercises = load_exercises()
+        level_exercises = [e for e in exercises if e.get("level") == level]
+        if level_exercises:
+            next_q = random.choice(level_exercises)
+            set_student_mode(uid_str, "qna", {"question": next_q})
+            if next_q.get("type") == "mcq":
+                opts = next_q.get("options", [])
+                await query.edit_message_text(
+                    f"{fb}\n\n❓ *Next Question ({level})*\n\n{next_q['question']}",
+                    parse_mode="Markdown",
+                    reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(opt, callback_data=f"qna_{opt}")] for opt in opts])
+                )
+            else:
+                set_student_mode(uid_str, "qna", {"question": next_q})
+                await query.edit_message_text(
+                    f"{fb}\n\n❓ *Next Question ({level})*\n\n{next_q['question']}\n\n_Type your answer in chat!_",
+                    parse_mode="Markdown"
+                )
+        else:
+            set_student_mode(uid_str, "menu")
+            await query.edit_message_text(f"{fb}\n\nTap ❓ Q&A for another question!", parse_mode="Markdown")
         return
 
     # ── ADMIN SESSION CHECK — NEVER EXPIRES ──
@@ -1361,7 +1385,49 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # ── Q&A ──
-    if "Q&A" in user_message or user_message == "❓ Q&A":
+    if "Q&A" in user_message or user_message == "❓ Q&A" or mode == "qna":
+
+        # If in qna mode and student typed an answer (not tapping Q&A button again)
+        if mode == "qna" and "Q&A" not in user_message:
+            data = student_data(uid_str)
+            q    = data.get("question", {})
+            if q.get("type") == "short":
+                correct    = q.get("answer", "").lower()
+                answer     = user_message.lower().strip()
+                is_correct = answer in correct or correct in answer
+                if is_correct:
+                    add_points(uid_str, 5)
+                    students = load_students()
+                    students[uid_str]["exercises_completed"] = students[uid_str].get("exercises_completed", 0) + 1
+                    save_students(students)
+                    fb = "✅ *Richtig!* +5 points 🌟"
+                else:
+                    fb = f"❌ *Falsch!*\n\nCorrect: *{esc(q.get('answer',''))}*"
+                # Auto send next question immediately
+                level     = student.get("level", "A1")
+                exercises = [e for e in load_exercises() if e.get("level") == level]
+                if exercises:
+                    next_q = random.choice(exercises)
+                    set_student_mode(uid_str, "qna", {"question": next_q})
+                    if next_q.get("type") == "mcq":
+                        opts = next_q.get("options", [])
+                        await update.message.reply_text(
+                            f"{fb}\n\n❓ *Next Question ({level})*\n\n{next_q['question']}",
+                            parse_mode="Markdown",
+                            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(opt, callback_data=f"qna_{opt}")] for opt in opts])
+                        )
+                    else:
+                        await update.message.reply_text(
+                            f"{fb}\n\n❓ *Next Question ({level})*\n\n{next_q['question']}\n\n_Type your answer!_",
+                            parse_mode="Markdown",
+                            reply_markup=cancel_keyboard()
+                        )
+                else:
+                    set_student_mode(uid_str, "menu")
+                    await update.message.reply_text(f"{fb}", parse_mode="Markdown", reply_markup=main_menu_keyboard())
+            return
+
+        # Fresh Q&A tap — send first question
         level     = student.get("level", "A1")
         exercises = [e for e in load_exercises() if e.get("level") == level]
         if not exercises:
@@ -1379,27 +1445,9 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await update.message.reply_text(
                 f"❓ *Q&A ({level})*\n\n{q['question']}\n\n_Type your answer!_",
-                parse_mode="Markdown", reply_markup=cancel_keyboard()
+                parse_mode="Markdown",
+                reply_markup=cancel_keyboard()
             )
-        return
-
-    if mode == "qna":
-        data    = student_data(uid_str)
-        q       = data.get("question", {})
-        if q.get("type") == "short":
-            correct    = q.get("answer", "").lower()
-            answer     = user_message.lower().strip()
-            is_correct = answer in correct or correct in answer
-            if is_correct:
-                add_points(uid_str, 5)
-                students = load_students()
-                students[uid_str]["exercises_completed"] = students[uid_str].get("exercises_completed", 0) + 1
-                save_students(students)
-                fb = "✅ *Richtig!* +5 points 🌟"
-            else:
-                fb = f"❌ *Falsch!*\n\nCorrect: *{esc(q.get('answer',''))}*"
-            set_student_mode(uid_str, "menu")
-            await update.message.reply_text(f"{fb}\n\nTap ❓ Q&A again!", parse_mode="Markdown", reply_markup=main_menu_keyboard())
         return
 
     # ── TODAY'S TEST ──
