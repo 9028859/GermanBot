@@ -1427,18 +1427,23 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
 
-        # Cancel
+        # Cancel — end current session
         if "Cancel" in msg:
+            trial["current_session"] = ""
+            trials[uid] = trial
+            save_trials(trials)
             set_s_mode(uid, "menu")
             await update.message.reply_text("↩️ Back.", reply_markup=TRIAL_KB)
             return
 
-        # Check if starting a new session
         sessions_used = trial.get("sessions_used", 0)
-        in_session    = trial.get("in_session", False)
+        current_session = trial.get("current_session", "")  # "vocab" or "qna" or ""
 
         if "Vocabulary Practice" in msg or "Q&A" in msg:
-            if not in_session:
+            # Starting a brand new session (not continuing one)
+            new_session_type = "vocab" if "Vocabulary Practice" in msg else "qna"
+            if current_session != new_session_type:
+                # This is a new session — check and consume a trial
                 if sessions_used >= 3:
                     await update.message.reply_text(
                         f"Hallo *{name}*! 👋\n\n"
@@ -1450,10 +1455,10 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         reply_markup=ReplyKeyboardRemove()
                     )
                     return
-                # Start new session — consume one trial
-                trial["sessions_used"] = sessions_used + 1
-                trial["in_session"]    = True
-                save_trials({**trials, uid: trial})
+                trial["sessions_used"]    = sessions_used + 1
+                trial["current_session"]  = new_session_type
+                trials[uid] = trial
+                save_trials(trials)
                 remaining = 3 - trial["sessions_used"]
                 if remaining > 0:
                     await update.message.reply_text(
