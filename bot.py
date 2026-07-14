@@ -511,9 +511,19 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     trials = load_trials()
     trial  = trials.get(uid, {})
     if not trial:
-        set_s_mode(uid, "trial_name")
+        trials[uid] = {"name": "", "sessions_used": 0, "asking_name": True}
+        save_trials(trials)
+        set_s_mode(uid, "trial_asking_name")
         await update.message.reply_text(
             "Hallo! 👋 Ich bin der Deutsche Lern-Bot der *Deutsch Lernen Company!*\n\n"
+            "Wie heißt du? *What is your name?*",
+            parse_mode="Markdown",
+            reply_markup=ReplyKeyboardRemove()
+        )
+    elif trial.get("asking_name"):
+        # Already asked, waiting for their name — do not repeat the welcome
+        set_s_mode(uid, "trial_asking_name")
+        await update.message.reply_text(
             "Wie heißt du? *What is your name?*",
             parse_mode="Markdown",
             reply_markup=ReplyKeyboardRemove()
@@ -532,6 +542,7 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         name = esc(trial.get("name",""))
         used = trial.get("sessions_used", 0)
         remaining = 3 - used
+        set_s_mode(uid, "menu")
         await update.message.reply_text(
             f"Willkommen zurück, *{name}*! 👋\n\n"
             f"You have *{remaining} free trial session(s)* remaining.\n\n"
@@ -1978,170 +1989,6 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Silent for anything else
         return
 
-    # ── TRIAL USER FLOW ──
-    if not is_admin(user_id):
-        trials = load_trials()
-        trial  = trials.get(uid, {})
-        mode   = s_mode(uid)
-
-        # First message ever
-        if not trial and mode != "trial_name":
-            set_s_mode(uid, "trial_name")
-            await update.message.reply_text(
-                "Hallo! 👋 Ich bin der Deutsche Lern-Bot der *Deutsch Lernen Company!*\n\nWie heißt du? *What is your name?*",
-                parse_mode="Markdown",
-                reply_markup=ReplyKeyboardRemove()
-            )
-            return
-
-        if mode == "trial_name":
-            name = extract_name(msg)
-            trials[uid] = {"name": name, "sessions_used": 0, "in_session": False}
-            save_trials(trials)
-            set_s_mode(uid, "menu")
-            await update.message.reply_text(
-                f"Willkommen, *{esc(name)}*! 🎉\n\n"
-                f"You have *3 free trial sessions\\!*\n\n"
-                f"Try our Vocabulary Practice and Q&A! 👇",
-                parse_mode="Markdown",
-                reply_markup=TRIAL_KB
-            )
-            return
-
-        # Reload trial
-        trial = trials.get(uid, {})
-        name  = esc(trial.get("name",""))
-
-        # Block restricted features
-        if any(kw in msg for kw in ["Today's Test","Leaderboard","Progress","📝","🏆","📊"]):
-            await update.message.reply_text(
-                "⛔ This feature is only for enrolled students.\n\nContact *+91 7012098913* to join!",
-                parse_mode="Markdown"
-            )
-            return
-
-        # Cancel — end current session
-        if "Cancel" in msg:
-            trial["current_session"] = ""
-            trials[uid] = trial
-            save_trials(trials)
-            set_s_mode(uid, "menu")
-            await update.message.reply_text("↩️ Back.", reply_markup=TRIAL_KB)
-            return
-
-        sessions_used = trial.get("sessions_used", 0)
-        current_session = trial.get("current_session", "")  # "vocab" or "qna" or ""
-
-        if "Vocabulary Practice" in msg or "Q&A" in msg:
-            # Starting a brand new session (not continuing one)
-            new_session_type = "vocab" if "Vocabulary Practice" in msg else "qna"
-            if current_session != new_session_type:
-                # This is a new session — check and consume a trial
-                if sessions_used >= 3:
-                    await update.message.reply_text(
-                        f"Hallo *{name}*! 👋\n\n"
-                        f"Your free trial has ended. 🎓\n\n"
-                        f"To continue learning German, please contact:\n"
-                        f"📞 *+91 7012098913*\n\n"
-                        f"Mention your name and we will activate your account!",
-                        parse_mode="Markdown",
-                        reply_markup=ReplyKeyboardRemove()
-                    )
-                    return
-                trial["sessions_used"]    = sessions_used + 1
-                trial["current_session"]  = new_session_type
-                trials[uid] = trial
-                save_trials(trials)
-                remaining = 3 - trial["sessions_used"]
-                if remaining > 0:
-                    await update.message.reply_text(
-                        f"_{remaining} free session(s) remaining after this one._",
-                        parse_mode="Markdown"
-                    )
-
-        # Handle vocab practice for trial user
-        if "Vocabulary Practice" in msg or (mode == "vocab_quiz"):
-            if "Vocabulary Practice" in msg:
-                db = load_database()
-                if not db:
-                    await update.message.reply_text("No vocabulary yet!", reply_markup=TRIAL_KB)
-                    return
-                word, meaning = random.choice(list(db.items()))
-                set_s_mode(uid, "vocab_quiz", {"word": word, "meaning": meaning})
-                await update.message.reply_text(
-                    f"📖 *Vocabulary Practice*\n\n🇩🇪 *{esc(word.capitalize())}*\n\n_Type the meaning!_ _(Tap ❌ Cancel to stop)_",
-                    parse_mode="Markdown",
-                    reply_markup=CANCEL_KB
-                )
-            else:
-                sd      = s_data(uid)
-                meaning = sd.get("meaning","").lower()
-                answer  = msg.lower().strip()
-                db      = load_database()
-                correct = answer in meaning or meaning in answer
-                fb      = "✅ *Richtig!* 🌟\n\n" if correct else f"❌ *Falsch!*\nRichtig: *{esc(sd.get('meaning',''))}*\n\n"
-                new_word, new_meaning = random.choice(list(db.items()))
-                set_s_mode(uid, "vocab_quiz", {"word": new_word, "meaning": new_meaning})
-                await update.message.reply_text(
-                    f"{fb}🇩🇪 *{esc(new_word.capitalize())}*\n\n_Type the meaning!_",
-                    parse_mode="Markdown",
-                    reply_markup=CANCEL_KB
-                )
-            return
-
-        # Handle Q&A for trial user
-        if "Q&A" in msg or mode == "qna":
-            if "Q&A" in msg:
-                exercises = [e for e in load_exercises() if e.get("level") == "A1"]
-                if not exercises:
-                    await update.message.reply_text("No questions available yet!", reply_markup=TRIAL_KB)
-                    return
-                q = random.choice(exercises)
-                set_s_mode(uid, "qna", {"question": q})
-                if q.get("type") == "mcq":
-                    opts = q.get("options",[])
-                    await update.message.reply_text(
-                        f"❓ *Q&A*\n\n{q['question']}",
-                        parse_mode="Markdown",
-                        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(opt, callback_data=f"qna_{opt}")] for opt in opts])
-                    )
-                else:
-                    await update.message.reply_text(
-                        f"❓ *Q&A*\n\n{q['question']}\n\n_Type your answer!_",
-                        parse_mode="Markdown",
-                        reply_markup=CANCEL_KB
-                    )
-            else:
-                sd      = s_data(uid)
-                q       = sd.get("question",{})
-                if q.get("type") == "short":
-                    correct    = q.get("answer","").lower()
-                    answer     = msg.lower().strip()
-                    is_correct = answer in correct or correct in answer
-                    fb = "✅ *Richtig!* 🌟" if is_correct else f"❌ *Falsch!*\n\nCorrect: *{esc(q.get('answer',''))}*"
-                    exercises = [e for e in load_exercises() if e.get("level") == "A1"]
-                    if exercises:
-                        next_q = random.choice(exercises)
-                        set_s_mode(uid, "qna", {"question": next_q})
-                        if next_q.get("type") == "mcq":
-                            opts = next_q.get("options",[])
-                            await update.message.reply_text(
-                                f"{fb}\n\n❓ *Next Question*\n\n{next_q['question']}",
-                                parse_mode="Markdown",
-                                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(opt, callback_data=f"qna_{opt}")] for opt in opts])
-                            )
-                        else:
-                            await update.message.reply_text(
-                                f"{fb}\n\n❓ *Next Question*\n\n{next_q['question']}\n\n_Type your answer!_",
-                                parse_mode="Markdown",
-                                reply_markup=CANCEL_KB
-                            )
-                    else:
-                        set_s_mode(uid, "menu")
-                        await update.message.reply_text(fb, parse_mode="Markdown", reply_markup=TRIAL_KB)
-            return
-
-        return
 
 # ─────────────────────────────────────────────
 # MAIN
