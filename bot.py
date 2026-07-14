@@ -68,6 +68,14 @@ def esc(text: str) -> str:
         return ""
     return str(text).replace("*","").replace("_","").replace("`","").replace("[","")
 
+def get_question(level: str) -> dict:
+    """Get a random question for a level — fast single call."""
+    exercises = load_exercises()
+    pool = [e for e in exercises if e.get("level") == level]
+    if not pool:
+        return {}
+    return random.choice(pool)
+
 def extract_name(text: str) -> str:
     """Extract just the first name from various formats."""
     text = text.strip()
@@ -1255,12 +1263,11 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # ── Q&A ──
         if "Q&A" in msg:
-            level     = student.get("level","A1")
-            exercises = [e for e in load_exercises() if e.get("level") == level]
-            if not exercises:
+            level = student.get("level","A1")
+            q     = get_question(level)
+            if not q:
                 await update.message.reply_text("No questions available yet for your level!", reply_markup=MAIN_KB)
                 return
-            q = random.choice(exercises)
             set_s_mode(uid, "qna", {"question": q})
             if q.get("type") == "mcq":
                 opts = q.get("options",[])
@@ -1293,10 +1300,596 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 else:
                     fb = f"❌ *Falsch!*\n\nCorrect: *{esc(q.get('answer',''))}*"
                 # Auto next question
-                level     = student.get("level","A1")
-                exercises = [e for e in load_exercises() if e.get("level") == level]
-                if exercises:
-                    next_q = random.choice(exercises)
+                level  = student.get("level","A1")
+                next_q = get_question(level)
+                if next_q:
+                    next_q = next_q
+                    set_s_mode(uid, "qna", {"question": next_q})
+                    if next_q.get("type") == "mcq":
+                        opts = next_q.get("options",[])
+                        await update.message.reply_text(
+                            f"{fb}\n\n❓ *Nächste Frage ({level})*\n\n{next_q['question']}",
+                            parse_mode="Markdown",
+                            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(opt, callback_data=f"qna_{opt}")] for opt in opts])
+                        )
+                    else:
+                        await update.message.reply_text(
+                            f"{fb}\n\n❓ *Nächste Frage ({level})*\n\n{next_q['question']}\n\n_Type your answer!_",
+                            parse_mode="Markdown",
+                            reply_markup=CANCEL_KB
+                        )
+                else:
+                    set_s_mode(uid, "menu")
+                    await update.message.reply_text(fb, parse_mode="Markdown", reply_markup=MAIN_KB)
+            return
+
+        # ── TODAY'S TEST ──
+        if "Today's Test" in msg or "Test" in msg:
+            daily = load_daily()
+            today = date.today().isoformat()
+            if daily.get("date") != today or not daily.get("words"):
+                await update.message.reply_text("📭 No test today yet.\n\nWait for 6:00 AM vocab! 🌅", reply_markup=MAIN_KB)
+                return
+            if uid in daily.get("attendance",[]):
+                await update.message.reply_text("✅ You already completed today's test! 🎉\nCome back tomorrow!", reply_markup=MAIN_KB)
+                return
+            if test_not_started():
+                await update.message.reply_text(
+                    "⏰ *There's still time for the test.*\n\n*Keep studying child!* 📚\n\nTest opens at *7:00 PM* sharp!",
+                    parse_mode="Markdown", reply_markup=MAIN_KB
+                )
+                return
+            if test_already_closed():
+                await update.message.reply_text(
+                    "⌛ *Continue learning and wait for the next test.* 💪\n\nNew vocab tomorrow at *6:00 AM*! 🌅",
+                    parse_mode="Markdown", reply_markup=MAIN_KB
+                )
+                return
+            if uid in active_tests:
+                await update.message.reply_text("📝 Your test is already running! Check above. ⬆️", reply_markup=CANCEL_KB)
+            else:
+                await update.message.reply_text("📝 Your test will arrive shortly! Please wait... ⏱", reply_markup=MAIN_KB)
+            return
+
+        # ── MY PROGRESS ──
+        if "Progress" in msg:
+            s     = students.get(uid,{})
+            daily = load_daily()
+            att   = "✅ Yes" if uid in daily.get("attendance",[]) else "❌ No"
+            await update.message.reply_text(
+                f"📊 *My Progress*\n\n"
+                f"👤 *Name:* {esc(s.get('name','?'))}\n"
+                f"📖 *Level:* {s.get('level','?')}\n"
+                f"⭐ *Total Points:* {s.get('points',0)}\n"
+                f"🏅 *Weekly Points:* {s.get('weekly_points',0)}\n"
+                f"🔥 *Streak:* {s.get('streak',0)} days\n"
+                f"📝 *Tests Done:* {s.get('exercises_completed',0)}\n"
+                f"📅 *Joined:* {s.get('joined','—')}\n"
+                f"🧪 *Today's Test:* {att}",
+                parse_mode="Markdown", reply_markup=MAIN_KB
+            )
+            return
+
+        # ── LEADERBOARD ──
+        if "Leaderboard" in msg:
+            students = load_students()
+            ranked = sorted(
+                [(s.get("name","?"),s.get("weekly_points",0),s.get("points",0))
+                 for s in students.values() if s.get("status")=="active"],
+                key=lambda x: x[1], reverse=True
+            )
+            lines  = ["🏆 *Weekly Leaderboard*\n"]
+            medals = ["🥇","🥈","🥉"]
+            for i,(name,wpts,tpts) in enumerate(ranked[:10],0):
+                medal = medals[i] if i < 3 else f"{i+1}\\."
+                lines.append(f"{medal} *{esc(name)}* — {wpts} pts this week")
+            if not ranked:
+                lines.append("No students yet!")
+            lines.append("\n_Resets every Friday at 6:00 PM_ 🗓")
+            await update.message.reply_text("\n".join(lines), parse_mode="Markdown", reply_markup=MAIN_KB)
+            return
+
+        # Silent for anything else
+        return
+
+    # ── TRIAL USER FLOW ──
+    if not is_admin(user_id):
+        trials = load_trials()
+        trial  = trials.get(uid, {})
+        mode   = s_mode(uid)
+
+        # Step 1: First time — ask name
+        if not trial:
+            trials[uid] = {"name": "", "sessions_used": 0, "asking_name": True}
+            save_trials(trials)
+            set_s_mode(uid, "trial_asking_name")
+            await update.message.reply_text(
+                "Hallo! 👋 Ich bin der Deutsche Lern-Bot der *Deutsch Lernen Company!*\n\n"
+                "Wie heißt du? *What is your name?*",
+                parse_mode="Markdown",
+                reply_markup=ReplyKeyboardRemove()
+            )
+            return
+
+        # Step 2: Save name
+        if trial.get("asking_name") or mode == "trial_asking_name":
+            name = extract_name(msg)
+            trials[uid] = {"name": name, "sessions_used": 0, "asking_name": False}
+            save_trials(trials)
+            set_s_mode(uid, "menu")
+            await update.message.reply_text(
+                f"Willkommen, *{esc(name)}*! 🎉\n\n"
+                f"You have *3 free trial sessions!*\n\n"
+                f"👇 Try Vocabulary Practice or Q&A!",
+                parse_mode="Markdown",
+                reply_markup=TRIAL_KB
+            )
+            return
+
+        # Reload trial
+        trial         = trials.get(uid, {})
+        name          = esc(trial.get("name", ""))
+        sessions_used = trial.get("sessions_used", 0)
+
+        # Block restricted features
+        if any(kw in msg for kw in ["Today's Test", "Leaderboard", "Progress", "📝", "🏆", "📊"]):
+            await update.message.reply_text(
+                "⛔ Only for enrolled students.\n\nContact *+91 7012098913* to join!",
+                parse_mode="Markdown"
+            )
+            return
+
+        # Cancel — end session
+        if "Cancel" in msg or msg == "❌ Cancel":
+            set_s_mode(uid, "menu")
+            await update.message.reply_text("↩️ Back.", reply_markup=TRIAL_KB)
+            return
+
+        # Check if starting NEW session (not mid-session)
+        is_starting_vocab = "Vocabulary Practice" in msg
+        is_starting_qna   = "Q&A" in msg
+        is_new_session    = is_starting_vocab or is_starting_qna
+
+        if is_new_session:
+            # Check trial limit
+            if sessions_used >= 3:
+                await update.message.reply_text(
+                    f"Hallo *{name}*! 👋\n\n"
+                    f"Your free trial has ended. 🎓\n\n"
+                    f"To continue learning German, contact:\n"
+                    f"📞 *+91 7012098913*\n\n"
+                    f"Mention your name to activate your account!",
+                    parse_mode="Markdown",
+                    reply_markup=ReplyKeyboardRemove()
+                )
+                return
+            # Consume one trial session
+            trials[uid]["sessions_used"] = sessions_used + 1
+            save_trials(trials)
+            remaining = 3 - trials[uid]["sessions_used"]
+            if remaining > 0:
+                await update.message.reply_text(
+                    f"_Session {trials[uid]['sessions_used']}/3 — {remaining} free session(s) remaining._",
+                    parse_mode="Markdown"
+                )
+
+        # VOCAB PRACTICE
+        if is_starting_vocab or mode == "vocab_quiz":
+            if is_starting_vocab:
+                db = load_database()
+                if not db:
+                    await update.message.reply_text("No vocabulary yet!", reply_markup=TRIAL_KB)
+                    return
+                word, meaning = random.choice(list(db.items()))
+                set_s_mode(uid, "vocab_quiz", {"word": word, "meaning": meaning})
+                await update.message.reply_text(
+                    f"📖 *Vocabulary Practice*\n\n🇩🇪 *{esc(word.capitalize())}*\n\n_Type the meaning!_ _(Tap ❌ Cancel to stop)_",
+                    parse_mode="Markdown",
+                    reply_markup=CANCEL_KB
+                )
+            else:
+                sd      = s_data(uid)
+                meaning = sd.get("meaning", "").lower()
+                answer  = msg.lower().strip()
+                db      = load_database()
+                correct = answer in meaning or meaning in answer
+                fb      = "✅ *Richtig!* 🌟\n\n" if correct else f"❌ *Falsch!*\nRichtig: *{esc(sd.get('meaning', ''))}*\n\n"
+                new_word, new_meaning = random.choice(list(db.items()))
+                set_s_mode(uid, "vocab_quiz", {"word": new_word, "meaning": new_meaning})
+                await update.message.reply_text(
+                    f"{fb}🇩🇪 *{esc(new_word.capitalize())}*\n\n_Type the meaning!_",
+                    parse_mode="Markdown",
+                    reply_markup=CANCEL_KB
+                )
+            return
+
+        # Q&A
+        if is_starting_qna or mode == "qna":
+            if is_starting_qna:
+                q = get_question("A1")
+                if not q:
+                    await update.message.reply_text("No questions available yet!", reply_markup=TRIAL_KB)
+                    return
+                set_s_mode(uid, "qna", {"question": q})
+                if q.get("type") == "mcq":
+                    await update.message.reply_text(
+                        f"❓ *Q&A*\n\n{q['question']}",
+                        parse_mode="Markdown",
+                        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(opt, callback_data=f"qna_{opt}")] for opt in q.get("options", [])])
+                    )
+                else:
+                    await update.message.reply_text(
+                        f"❓ *Q&A*\n\n{q['question']}\n\n_Type your answer!_",
+                        parse_mode="Markdown",
+                        reply_markup=CANCEL_KB
+                    )
+            else:
+                sd = s_data(uid)
+                q  = sd.get("question", {})
+                if q.get("type") == "short":
+                    correct    = q.get("answer", "").lower()
+                    is_correct = msg.lower().strip() in correct or correct in msg.lower().strip()
+                    fb = "✅ *Richtig!* 🌟" if is_correct else f"❌ *Falsch!*\n\nCorrect: *{esc(q.get('answer', ''))}*"
+                    next_q = get_question("A1")
+                    if next_q:
+                        set_s_mode(uid, "qna", {"question": next_q})
+                        if next_q.get("type") == "mcq":
+                            await update.message.reply_text(
+                                f"{fb}\n\n❓ *Next Question*\n\n{next_q['question']}",
+                                parse_mode="Markdown",
+                                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(opt, callback_data=f"qna_{opt}")] for opt in next_q.get("options", [])])
+                            )
+                        else:
+                            await update.message.reply_text(
+                                f"{fb}\n\n❓ *Next Question*\n\n{next_q['question']}\n\n_Type your answer!_",
+                                parse_mode="Markdown",
+                                reply_markup=CANCEL_KB
+                            )
+                    else:
+                        set_s_mode(uid, "menu")
+                        await update.message.reply_text(fb, parse_mode="Markdown", reply_markup=TRIAL_KB)
+            return
+
+        return
+
+
+# ─────────────────────────────────────────────
+# MAIN REPLY HANDLER
+# ─────────────────────────────────────────────
+async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg      = update.message.text.strip()
+    user_id  = update.effective_user.id
+    uid      = str(user_id)
+    username = update.effective_user.username or ""
+    chat_type= update.effective_chat.type
+
+    # Group = complete silence
+    if chat_type in ("group","supergroup"):
+        return
+
+    # ── ADMIN FLOW ──
+    state = admin_state(user_id)
+
+    if state == "waiting_password":
+        try:
+            await context.bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
+        except Exception:
+            pass
+        settings = load_settings()
+        if msg == settings.get("admin_password", ADMIN_PASS):
+            set_admin_state(user_id, "logged_in")
+            await send_admin_menu(update, context, "✅ *Login successful!*\n\nChoose an option:")
+        else:
+            await update.message.reply_text("❌ Wrong password.")
+            clear_admin(user_id)
+        return
+
+    if state == "broadcast":
+        wl   = load_whitelist()
+        sent = 0
+        for wid in wl.get("ids",[]):
+            try:
+                await context.bot.send_message(chat_id=int(wid), text=f"📢 *Message from your German tutor:*\n\n{msg}", parse_mode="Markdown")
+                sent += 1
+            except Exception:
+                pass
+        set_admin_state(user_id, "logged_in")
+        await update.message.reply_text(f"✅ Sent to {sent} student(s).", reply_markup=admin_kb())
+        return
+
+    if state == "set_password":
+        settings = load_settings()
+        settings["admin_password"] = msg
+        save_settings(settings)
+        set_admin_state(user_id, "logged_in")
+        await update.message.reply_text("✅ Password updated!", reply_markup=admin_kb())
+        return
+
+    if state == "add_vocab":
+        db     = load_database()
+        added  = 0
+        skipped= 0
+        lines  = msg.strip().split("\n")
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            word, meaning = None, None
+            for sep in [" = "," - "," – "]:
+                if sep in line:
+                    parts   = line.split(sep,1)
+                    word    = parts[0].strip().lower()
+                    meaning = parts[1].strip()
+                    break
+            if not word and " " in line:
+                parts   = line.split(" ",1)
+                word    = parts[0].strip().lower()
+                meaning = parts[1].strip()
+            if word and meaning:
+                if word in db:
+                    skipped += 1
+                else:
+                    db[word] = meaning
+                    added += 1
+        save_database(db)
+        set_admin_state(user_id, "logged_in")
+        await update.message.reply_text(
+            f"✅ *Vocabulary updated!*\n\nAdded: *{added}*\nSkipped: *{skipped} duplicates*",
+            parse_mode="Markdown", reply_markup=admin_kb()
+        )
+        return
+
+    if state == "add_exercise_text":
+        stored = admin_sessions[user_id].get("data",{})
+        level  = stored.get("level","A1")
+        if "|" in msg:
+            parts    = msg.split("|",1)
+            question = parts[0].strip()
+            answer   = parts[1].strip()
+            exercises = load_exercises()
+            exercises.append({"level":level,"question":question,"answer":answer,"type":"short"})
+            save_exercises(exercises)
+            set_admin_state(user_id, "logged_in")
+            await update.message.reply_text(f"✅ Exercise added for *{level}*!", parse_mode="Markdown", reply_markup=admin_kb())
+        else:
+            await update.message.reply_text("⚠️ Format: `Question | Answer`", parse_mode="Markdown")
+        return
+
+    if state == "wl_add_id":
+        entry = msg.strip()
+        if entry.isdigit():
+            wl = load_whitelist()
+            if entry not in [str(i) for i in wl["ids"]]:
+                wl["ids"].append(entry)
+                save_whitelist(wl)
+                set_admin_state(user_id, "logged_in")
+                await update.message.reply_text(f"✅ ID `{entry}` added!", parse_mode="Markdown", reply_markup=admin_kb())
+            else:
+                await update.message.reply_text("ℹ️ Already in whitelist.")
+        else:
+            await update.message.reply_text("⚠️ Numbers only.")
+        return
+
+    if state == "wl_add_username":
+        entry = msg.strip().lstrip("@").lower()
+        wl    = load_whitelist()
+        if entry not in [u.lower() for u in wl.get("usernames",[])]:
+            wl["usernames"].append(entry)
+            save_whitelist(wl)
+            set_admin_state(user_id, "logged_in")
+            await update.message.reply_text(f"✅ @{entry} added!", parse_mode="Markdown", reply_markup=admin_kb())
+        else:
+            await update.message.reply_text("ℹ️ Already in whitelist.")
+        return
+
+    if state == "wl_remove":
+        entry = msg.strip().lstrip("@").lower()
+        wl    = load_whitelist()
+        removed = False
+        if entry.isdigit() and entry in [str(i) for i in wl["ids"]]:
+            wl["ids"] = [i for i in wl["ids"] if str(i) != entry]
+            wl.get("frozen",{}).pop(entry,None)
+            removed = True
+        elif entry in [u.lower() for u in wl.get("usernames",[])]:
+            wl["usernames"] = [u for u in wl["usernames"] if u.lower() != entry]
+            removed = True
+        if removed:
+            save_whitelist(wl)
+            set_admin_state(user_id, "logged_in")
+            await update.message.reply_text(f"✅ `{entry}` removed.", parse_mode="Markdown", reply_markup=admin_kb())
+        else:
+            await update.message.reply_text("⚠️ Not found.")
+        return
+
+    if state in ("wl_freeze_id","freeze_input"):
+        stored = admin_sessions[user_id].get("data",{})
+        if state == "wl_freeze_id":
+            if not msg.strip().isdigit():
+                await update.message.reply_text("⚠️ Numbers only.")
+                return
+            stored["uid"] = msg.strip()
+            set_admin_state(user_id, "freeze_input", stored)
+            await update.message.reply_text(
+                f"❄️ How long to freeze `{stored['uid']}`?\n\nSend days (e.g. `3`) or datetime (e.g. `2026-08-01 18:00`)\n\nSend /cancel to abort.",
+                parse_mode="Markdown"
+            )
+            return
+        uid_to_freeze = stored.get("uid","")
+        try:
+            entry = msg.strip()
+            if entry.isdigit():
+                until = datetime.now(IST) + timedelta(days=int(entry))
+            else:
+                until = IST.localize(datetime.strptime(entry,"%Y-%m-%d %H:%M"))
+            wl = load_whitelist()
+            if "frozen" not in wl: wl["frozen"] = {}
+            wl["frozen"][uid_to_freeze] = until.isoformat()
+            save_whitelist(wl)
+            set_admin_state(user_id, "logged_in")
+            await update.message.reply_text(
+                f"❄️ Student `{uid_to_freeze}` frozen until *{until.strftime('%d %b %Y %H:%M')}*",
+                parse_mode="Markdown", reply_markup=admin_kb()
+            )
+        except Exception:
+            await update.message.reply_text("⚠️ Format: days (e.g. `3`) or `2026-08-01 18:00`", parse_mode="Markdown")
+        return
+
+    # ── WHITELISTED STUDENT FLOW ──
+    if is_whitelisted(user_id, username) and not is_admin(user_id):
+        # Clear trial if any
+        trials = load_trials()
+        if uid in trials:
+            trials.pop(uid)
+            save_trials(trials)
+
+        frozen = is_frozen(user_id)
+        if frozen:
+            await update.message.reply_text(
+                f"❄️ Your access is temporarily suspended.\n\nPlease contact *+91 7012098913*.",
+                parse_mode="Markdown"
+            )
+            return
+
+        students = load_students()
+        mode     = s_mode(uid)
+
+        # ── PROFILE SETUP ──
+        if mode == "setup_name":
+            name = extract_name(msg)
+            set_s_mode(uid, "setup_level", {"name": name})
+            await update.message.reply_text(
+                f"Schön, *{esc(name)}*! 😊\n\nWähle dein Deutschniveau:\n*Choose your German level:*",
+                parse_mode="Markdown",
+                reply_markup=LEVEL_KB
+            )
+            return
+
+        if mode == "setup_level":
+            if msg not in ["A1","A2","B1","B2"]:
+                await update.message.reply_text("Please choose your level:", reply_markup=LEVEL_KB)
+                return
+            stored_data = s_data(uid)
+            name        = stored_data.get("name","Student")
+            students[uid] = {
+                "name"            : name,
+                "username"        : username,
+                "level"           : msg,
+                "status"          : "active",
+                "points"          : 0,
+                "weekly_points"   : 0,
+                "streak"          : 0,
+                "exercises_completed": 0,
+                "recent_scores"   : [],
+                "attendance_count": 0,
+                "joined"          : datetime.now(IST).strftime("%d %B %Y"),
+                "last_active"     : datetime.now(IST).strftime("%d %b %Y %H:%M"),
+                "last_active_date": date.today().isoformat()
+            }
+            save_students(students)
+            set_s_mode(uid, "menu")
+            await update.message.reply_text(
+                f"Willkommen, *{esc(name)}*! 🎉\n\nLevel: *{msg}*\n\nHier ist dein Menü! Here is your menu! 👇",
+                parse_mode="Markdown",
+                reply_markup=MAIN_KB
+            )
+            return
+
+        # Reload student
+        student = students.get(uid, {})
+        if not student or student.get("status") != "active":
+            set_s_mode(uid, "setup_name")
+            await update.message.reply_text("Wie heißt du? What is your name?", reply_markup=ReplyKeyboardRemove())
+            return
+
+        touch_student(uid)
+
+        # ── CANCEL ──
+        if "Cancel" in msg or msg == "❌ Cancel":
+            set_s_mode(uid, "menu")
+            await update.message.reply_text("↩️ Zurück zum Menü.", reply_markup=MAIN_KB)
+            return
+
+        # ── VOCAB PRACTICE ──
+        if "Vocabulary Practice" in msg:
+            db = load_database()
+            if not db:
+                await update.message.reply_text("No vocabulary yet!", reply_markup=MAIN_KB)
+                return
+            word, meaning = random.choice(list(db.items()))
+            set_s_mode(uid, "vocab_quiz", {"word": word, "meaning": meaning})
+            await update.message.reply_text(
+                f"📖 *Vocabulary Practice*\n\nWas bedeutet auf Englisch:\n\n🇩🇪 *{esc(word.capitalize())}*\n\n_Type your answer!_ _(Tap ❌ Cancel to stop)_",
+                parse_mode="Markdown",
+                reply_markup=CANCEL_KB
+            )
+            return
+
+        if mode == "vocab_quiz":
+            sd      = s_data(uid)
+            meaning = sd.get("meaning","").lower()
+            answer  = msg.lower().strip()
+            db      = load_database()
+            correct = answer in meaning or meaning in answer
+            if correct:
+                add_points(uid, 5)
+                students = load_students()
+                students[uid]["exercises_completed"] = students[uid].get("exercises_completed",0)+1
+                save_students(students)
+                fb = "✅ *Richtig!* +5 points 🌟\n\n"
+            else:
+                fb = f"❌ *Falsch!*\nRichtig: *{esc(sd.get('meaning',''))}*\n\n"
+            new_word, new_meaning = random.choice(list(db.items()))
+            set_s_mode(uid, "vocab_quiz", {"word": new_word, "meaning": new_meaning})
+            await update.message.reply_text(
+                f"{fb}Nächstes Wort:\n\n🇩🇪 *{esc(new_word.capitalize())}*\n\n_Type the meaning!_",
+                parse_mode="Markdown",
+                reply_markup=CANCEL_KB
+            )
+            return
+
+        # ── Q&A ──
+        if "Q&A" in msg:
+            level = student.get("level","A1")
+            q     = get_question(level)
+            if not q:
+                await update.message.reply_text("No questions available yet for your level!", reply_markup=MAIN_KB)
+                return
+            set_s_mode(uid, "qna", {"question": q})
+            if q.get("type") == "mcq":
+                opts = q.get("options",[])
+                await update.message.reply_text(
+                    f"❓ *Q&A ({level})*\n\n{q['question']}",
+                    parse_mode="Markdown",
+                    reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(opt, callback_data=f"qna_{opt}")] for opt in opts])
+                )
+            else:
+                await update.message.reply_text(
+                    f"❓ *Q&A ({level})*\n\n{q['question']}\n\n_Type your answer!_",
+                    parse_mode="Markdown",
+                    reply_markup=CANCEL_KB
+                )
+            return
+
+        if mode == "qna":
+            sd      = s_data(uid)
+            q       = sd.get("question",{})
+            if q.get("type") == "short":
+                correct    = q.get("answer","").lower()
+                answer     = msg.lower().strip()
+                is_correct = answer in correct or correct in answer
+                if is_correct:
+                    add_points(uid, 5)
+                    students = load_students()
+                    students[uid]["exercises_completed"] = students[uid].get("exercises_completed",0)+1
+                    save_students(students)
+                    fb = "✅ *Richtig!* +5 points 🌟"
+                else:
+                    fb = f"❌ *Falsch!*\n\nCorrect: *{esc(q.get('answer',''))}*"
+                # Auto next question
+                level  = student.get("level","A1")
+                next_q = get_question(level)
+                if next_q:
+                    next_q = next_q
                     set_s_mode(uid, "qna", {"question": next_q})
                     if next_q.get("type") == "mcq":
                         opts = next_q.get("options",[])
