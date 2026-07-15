@@ -982,6 +982,19 @@ async def pdf_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # MAIN REPLY HANDLER
 # ─────────────────────────────────────────────
 async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        await reply_handler(update, context)
+    except Exception as e:
+        # Explicit error log + notify
+        print(f"❌ reply() exception: {e}")
+        await context.bot.send_message(
+            chat_id=int(ADMIN_ID),
+            text=f"🔴 *CRITICAL: reply() crashed*\n\nUser: {update.effective_user.id}\nError: `{str(e)[:200]}`",
+            parse_mode="Markdown"
+        )
+        raise
+
+async def reply_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg      = update.message.text.strip()
     user_id  = update.effective_user.id
     uid      = str(user_id)
@@ -1566,6 +1579,40 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ─────────────────────────────────────────────
+# ERROR HANDLER
+# ─────────────────────────────────────────────
+async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Log errors and notify admin."""
+    import traceback
+    error_text = str(context.error)
+    tb = traceback.format_exc()
+    
+    # Log to console with full traceback
+    print(f"\n{'='*60}")
+    print(f"⚠️  ERROR at {datetime.now(IST).strftime('%d %b %Y %H:%M:%S')}")
+    print(f"{'='*60}")
+    print(tb)
+    print(f"{'='*60}\n")
+    
+    # Notify admin via DM
+    try:
+        admin_msg = f"❌ *BOT ERROR*\n\n"
+        admin_msg += f"*Error:* `{error_text[:200]}`\n\n"
+        if update:
+            admin_msg += f"*User:* `{update.effective_user.id}`\n"
+            if update.message:
+                admin_msg += f"*Message:* `{update.message.text[:100]}`\n"
+        admin_msg += f"*Time:* {datetime.now(IST).strftime('%d %b %H:%M:%S')}"
+        
+        await context.bot.send_message(
+            chat_id=int(ADMIN_ID),
+            text=admin_msg,
+            parse_mode="Markdown"
+        )
+    except Exception as e:
+        print(f"⚠️  Failed to notify admin: {e}")
+
+# ─────────────────────────────────────────────
 # MAIN
 # ─────────────────────────────────────────────
 def main():
@@ -1583,6 +1630,9 @@ def main():
     app.add_handler(CallbackQueryHandler(callback_handler))
     app.add_handler(MessageHandler(filters.Document.PDF, pdf_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, reply))
+    
+    # Error handler — catches all exceptions
+    app.add_error_handler(error_handler)
 
     print("🤖 Deutsch Lernen Bot started!")
     app.run_polling()
