@@ -235,11 +235,20 @@ def test_already_closed():
 # SCHEDULED JOBS
 # ─────────────────────────────────────────────
 async def job_daily_vocab(context: ContextTypes.DEFAULT_TYPE):
-    """6:00 AM IST — post 10 vocab words to group."""
+    """6:00 AM IST — post 10 vocab words to group (once per day only)."""
     db = load_database()
     if not db:
         return
+    
     daily = load_daily()
+    today = date.today().isoformat()
+    
+    # BUG FIX: Only run once per calendar day
+    # If today's vocab already broadcast, don't do it again
+    if daily.get("date") == today and daily.get("words"):
+        print(f"✅ Vocab for {today} already sent. Skipping.")
+        return
+    
     all_words = list(db.keys())
     total     = len(all_words)
     idx       = daily.get("word_index", 0) % total
@@ -248,11 +257,12 @@ async def job_daily_vocab(context: ContextTypes.DEFAULT_TYPE):
         chosen.append(all_words[(idx + i) % total])
     new_index = (idx + 10) % total
     daily = {
-        "date"       : date.today().isoformat(),
+        "date"       : today,
         "words"      : {w: db[w] for w in chosen},
         "attendance" : [],
         "test_results": {},
-        "word_index" : new_index
+        "word_index" : new_index,
+        "last_broadcast_time": datetime.now(IST).isoformat()
     }
     save_daily(daily)
     lines = ["🌅 *Guten Morgen\\! Good Morning\\!*\n\n📖 *Today\\'s 10 Vocabulary Words:*\n"]
@@ -261,8 +271,9 @@ async def job_daily_vocab(context: ContextTypes.DEFAULT_TYPE):
     lines.append("\n🧪 *Test at 7:00 PM sharp\\! Only 5 minutes\\!* ⏱\n📚 Keep studying\\!")
     try:
         await context.bot.send_message(chat_id=GROUP_ID, text="\n".join(lines), parse_mode="MarkdownV2")
+        print(f"✅ Vocab for {today} sent successfully. Words {idx}-{idx+10}")
     except Exception as e:
-        print(f"Vocab send error: {e}")
+        print(f"❌ Vocab send error: {e}")
 
 async def job_test_announcement(context: ContextTypes.DEFAULT_TYPE):
     """7:00 PM IST — announce test in group and send MCQ to all students."""
@@ -1413,7 +1424,12 @@ async def reply_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("\n".join(lines), parse_mode="Markdown", reply_markup=MAIN_KB)
             return
 
-        # Silent for anything else
+        # FALLBACK: User sent unrecognized text
+        # Don't be silent — guide them back
+        await update.message.reply_text(
+            "❓ I didn't understand that.\n\nPlease use the menu buttons below 👇",
+            reply_markup=MAIN_KB
+        )
         return
 
     # ── TRIAL USER FLOW ──
@@ -1574,6 +1590,11 @@ async def reply_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         await update.message.reply_text(fb, parse_mode="Markdown", reply_markup=TRIAL_KB)
             return
 
+        # FALLBACK: Trial user sent unrecognized text
+        await update.message.reply_text(
+            "❓ I didn't understand that.\n\nPlease use the buttons below 👇",
+            reply_markup=TRIAL_KB
+        )
         return
 
 
@@ -1635,6 +1656,20 @@ def main():
     app.add_error_handler(error_handler)
 
     print("🤖 Deutsch Lernen Bot started!")
+    
+    # Diagnostics at startup
+    db = load_database()
+    students = load_students()
+    trials = load_trials()
+    daily = load_daily()
+    
+    print(f"\n📊 BOT STATE AT STARTUP:")
+    print(f"   • Database: {len(db)} vocabulary words")
+    print(f"   • Enrolled Students: {len([s for s in students.values() if s.get('status')=='active'])}")
+    print(f"   • Trial Users: {len(trials)}")
+    print(f"   • Today's Vocab Sent: {'✅ Yes' if daily.get('date') == date.today().isoformat() else '❌ Not yet'}")
+    print(f"   • Current Word Index: {daily.get('word_index', 0)}\n")
+    
     app.run_polling()
 
 if __name__ == "__main__":
