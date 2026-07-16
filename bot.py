@@ -64,9 +64,15 @@ def load_trials():    return load_json(TRIAL_FILE, {})
 def save_trials(d):   save_json(TRIAL_FILE, d)
 
 def esc(text: str) -> str:
+    """Escape all MarkdownV2 special characters by prefixing with backslash."""
     if not text:
         return ""
-    return str(text).replace("*","").replace("_","").replace("`","").replace("[","")
+    # All MarkdownV2 special characters that need escaping
+    chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
+    result = str(text)
+    for char in chars:
+        result = result.replace(char, '\\' + char)
+    return result
 
 def get_question(level: str) -> dict:
     """Get a random question for a level — fast single call."""
