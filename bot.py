@@ -152,7 +152,7 @@ def s_data(uid): return student_sessions.get(uid, {}).get("data", {})
 # ─────────────────────────────────────────────
 # KEYBOARDS
 # ─────────────────────────────────────────────
-MAIN_KB    = ReplyKeyboardMarkup([["📖 Vocabulary Practice","❓ Q&A"],["📝 Today's Test","📊 My Progress"],["🏆 Leaderboard"]], resize_keyboard=True)
+MAIN_KB    = ReplyKeyboardMarkup([["📖 Vocabulary Practice","❓ Q&A"],["📝 Today's Test","📊 My Progress"],["🏆 Leaderboard","👁️ View Vocab"]], resize_keyboard=True)
 TRIAL_KB   = ReplyKeyboardMarkup([["📖 Vocabulary Practice","❓ Q&A"]], resize_keyboard=True)
 LEVEL_KB   = ReplyKeyboardMarkup([["A1","A2"],["B1","B2"]], resize_keyboard=True)
 CANCEL_KB  = ReplyKeyboardMarkup([["❌ Cancel"]], resize_keyboard=True)
@@ -1428,6 +1428,30 @@ async def reply_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 lines.append("No students yet!")
             lines.append("\n_Resets every Friday at 6:00 PM_ 🗓")
             await update.message.reply_text("\n".join(lines), parse_mode="Markdown", reply_markup=MAIN_KB)
+            return
+
+        # ── VIEW TODAY'S VOCAB ──
+        if "View Vocab" in msg:
+            daily = load_daily()
+            today = date.today().isoformat()
+            
+            # Check if today's vocab exists
+            if daily.get("date") != today or not daily.get("words"):
+                await update.message.reply_text(
+                    "📖 *Today's Vocabulary*\n\n❌ Vocab not sent yet\\. Check back at 6:00 AM IST\\!",
+                    parse_mode="MarkdownV2",
+                    reply_markup=MAIN_KB
+                )
+                return
+            
+            words = daily.get("words", {})
+            lines = ["📖 *Today's 10 Vocabulary Words*\n"]
+            for i, (word, meaning) in enumerate(words.items(), 1):
+                lines.append(f"{i}\\. *{esc(word)}* — {esc(meaning)}")
+            
+            lines.append(f"\n_Sent on:_ {daily.get('last_broadcast_time', 'N/A')}")
+            
+            await update.message.reply_text("\n".join(lines), parse_mode="MarkdownV2", reply_markup=MAIN_KB)
             return
 
         # FALLBACK: User sent unrecognized text
